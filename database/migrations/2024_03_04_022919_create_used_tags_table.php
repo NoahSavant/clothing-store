@@ -14,13 +14,12 @@ return new class extends Migration
         Schema::create('used_tags', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tag_id')->nullable();
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->string('parent_type')->nullable();
+            $table->unsignedBigInteger('tagmorph_id')->nullable();
+            $table->string('tagmorph_type')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->foreign('tag_id')->references('id')->on('tags');
-
         });
     }
 

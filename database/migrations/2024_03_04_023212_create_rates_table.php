@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('rates', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->string('parent_type')->nullable();
+            $table->unsignedBigInteger('ratemorph_id')->nullable();
+            $table->string('ratemorph_type')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

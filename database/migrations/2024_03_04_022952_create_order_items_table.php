@@ -20,12 +20,16 @@ return new class extends Migration
             $table->string('size')->nullable();
             $table->string('color')->nullable();
             $table->string('material')->nullable();
+            $table->unsignedBigInteger('order_id')->nullable();
             $table->unsignedBigInteger('original_price')->nullable();
             $table->unsignedBigInteger('price')->nullable();
             $table->unsignedBigInteger('tax')->nullable();
             $table->unsignedBigInteger('amount')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('order_id')->references('id')->on('orders');
+
         });
     }
 

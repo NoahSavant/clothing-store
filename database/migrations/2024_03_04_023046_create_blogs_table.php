@@ -16,11 +16,11 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->text('content')->nullable();
             $table->integer('status')->nullable();
+            $table->string('image_url')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->foreign('user_id')->references('id')->on('users');
-
         });
     }
 

@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('key')->nullable();
             $table->text('value')->nullable();
             $table->integer('type')->nullable();
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->string('parent_type')->nullable();
+            $table->unsignedBigInteger('variablemorph_id')->nullable();
+            $table->string('variablemorph_type')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

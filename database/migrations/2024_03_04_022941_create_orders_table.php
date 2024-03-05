@@ -14,13 +14,18 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('staff_id')->nullable();
+            $table->timestamp('started_at')->nullable();
             $table->unsignedBigInteger('total_price')->nullable();
-            $table->integer('transportation_method');
-            $table->integer('payment_method');
+            $table->integer('transportation_method')->nullable();
+            $table->integer('payment_method')->nullable();
+            $table->integer('status')->nullable();
+            $table->string('phonenumber')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('staff_id')->references('id')->on('users');
         });
     }
 

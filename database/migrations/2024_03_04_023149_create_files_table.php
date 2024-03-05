@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('url')->nullable();
             $table->integer('type')->nullable();
             $table->integer('category')->nullable();
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->string('parent_type')->nullable();
+            $table->unsignedBigInteger('filemorph_id')->nullable();
+            $table->string('filemorph_type')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
