@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->text('description')->nullable();
             $table->text('short_description')->nullable();
-            $table->unsignedBigInteger('brand_id')->nullable();
+            $table->unsignedBigInteger('branch_id')->nullable();
             $table->unsignedBigInteger('category_id')->nullable();
             $table->integer('status')->nullable();
             $table->string('image_url')->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('brand_id')->references('id')->on('brands');
+            $table->foreign('branch_id')->references('id')->on('branchs');
             $table->foreign('category_id')->references('id')->on('categories');
         });
     }

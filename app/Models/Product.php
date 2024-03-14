@@ -16,7 +16,7 @@ class Product extends Model
         'name',
         'description',
         'short_description',
-        'brand_id',
+        'branch_id',
         'category_id',
         'status',
         'image_url',
@@ -43,9 +43,9 @@ class Product extends Model
         return $this->morphMany(File::class, 'filemorph');
     }
 
-    public function brand(): BelongsTo
+    public function branch(): BelongsTo
     {
-        return $this->belongsTo(Brand::class);
+        return $this->belongsTo(Branch::class);
     }
 
     public function category(): BelongsTo
