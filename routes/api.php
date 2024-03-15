@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthenController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::post('/login', [AuthenController::class, 'login'])->name('login');
+Route::post('/sign-up', [AuthenController::class, 'signUp'])->name('auth.signup');
+Route::get('/unauthenticated', [AuthenController::class, 'throwAuthenError'])->name('auth.authenError');
+Route::get('/unauthorized', [AuthenController::class, 'throwAuthorError'])->name('auth.authorError');
+Route::post('/send-verify', [AuthenController::class, 'sendVerify'])->name('sendVerify');
+Route::post('/active-account', [AuthenController::class, 'activeAccount'])->name('activeAccount');
+Route::post('/reset-password', [AuthenController::class, 'resetPassword'])->name('resetPassword');
+Route::post('/refresh', [AuthenController::class, 'refresh'])->name('refresh');
