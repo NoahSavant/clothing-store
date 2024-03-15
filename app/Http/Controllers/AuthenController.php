@@ -6,6 +6,7 @@ use App\Constants\AuthenConstants\StatusResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AuthenFormRequests\LoginFormRequest;
 use App\Http\Requests\AuthenFormRequests\RefreshFormRequest;
+use App\Http\Requests\AuthenFormRequests\ResetPasswordFormRequest;
 use App\Http\Requests\AuthenFormRequests\SendVerifyFormRequest;
 use App\Http\Requests\AuthenFormRequests\SignUpFormRequest;
 use App\Http\Requests\AuthenFormRequests\VerifyAccountFormRequest;
@@ -35,6 +36,11 @@ class AuthenController extends Controller
 
     public function activeAccount(VerifyAccountFormRequest $request) {
         return $this->authenService->activeAccount($request->all());
+    }
+
+    public function resetPassword(ResetPasswordFormRequest $request)
+    {
+        return $this->authenService->resetPassword($request->all());
     }
 
     public function throwAuthenError()

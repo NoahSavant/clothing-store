@@ -175,7 +175,7 @@ class AuthenService extends BaseService
     {
         $user = $this->userService->getBy('email', $input['email']);
 
-        if (!$user or $user->status !== UserStatus::ACTIVE) {
+        if (!$user) {
             return $this->response([
                 'message' => 'Can not find out the email',
             ], StatusResponse::ERROR);
@@ -200,7 +200,7 @@ class AuthenService extends BaseService
 
         $user = $this->userService->model->where('email', $email)->where('verify_code', $verifyCode)->first();
 
-        if (!$user) {
+        if (!$user or $user->status !== UserStatus::ACTIVE) {
             return $this->response([
                 'message' => 'Could not find a user with a valid authentication token',
             ], StatusResponse::ERROR);
@@ -221,7 +221,7 @@ class AuthenService extends BaseService
         $user->save();
 
         return $this->response([
-            'message' => 'Account activated successfully',
+            'message' => 'Reset password successfully',
         ], StatusResponse::SUCCESS);
     }
 

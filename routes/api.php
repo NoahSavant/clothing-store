@@ -21,5 +21,5 @@ Route::get('/unauthenticated', [AuthenController::class, 'throwAuthenError'])->n
 Route::get('/unauthorized', [AuthenController::class, 'throwAuthorError'])->name('auth.authorError');
 Route::post('/send-verify', [AuthenController::class, 'sendVerify'])->name('sendVerify');
 Route::post('/active-account', [AuthenController::class, 'activeAccount'])->name('activeAccount');
-Route::post('/reset-password', [AuthenController::class, 'activeAccount'])->name('activeAccount');
+Route::post('/reset-password', [AuthenController::class, 'resetPassword'])->name('resetPassword');
 Route::post('/refresh', [AuthenController::class, 'refresh'])->name('refresh');
