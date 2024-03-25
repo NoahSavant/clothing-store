@@ -23,3 +23,18 @@ Route::post('/send-verify', [AuthenController::class, 'sendVerify'])->name('send
 Route::post('/active-account', [AuthenController::class, 'activeAccount'])->name('activeAccount');
 Route::post('/reset-password', [AuthenController::class, 'resetPassword'])->name('resetPassword');
 Route::post('/refresh', [AuthenController::class, 'refresh'])->name('refresh');
+
+
+Route::middleware('auth:api')->group(function () {
+    // Route::middleware('author:' . UserRole::ADMIN)->group(function () {
+    //     Route::controller(UserController::class)->prefix('users')->group(function () {
+    //         Route::get('/', [UserController::class,'index'])->name('getAllUser');
+
+    //     });
+    // });
+
+    Route::controller(UserController::class)->prefix('users')->group(function () {
+        Route::get('/', 'index')->name('getAllUser');
+        Route::get('/dashboard', 'getDashboard')->name('getDashboard');
+    });
+});

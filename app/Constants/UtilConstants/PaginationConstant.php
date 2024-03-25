@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Constants;
+namespace App\Constants\UtilConstants;
 
-class UtilConstant
+class PaginationConstant
 {
     const LIMIT_RECORD = 12;
 

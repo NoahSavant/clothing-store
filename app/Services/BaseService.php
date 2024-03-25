@@ -3,13 +3,16 @@
 namespace App\Services;
 
 use App\Constants\AuthenConstants\EncryptionKey;
-use App\Constants\UtilConstant;
+use App\Constants\UtilConstants\DataTypeConstant;
+use App\Constants\UtilConstants\PaginationConstant;
 use App\Jobs\SendMailQueue;
 use App\Mail\SendMail;
 use Carbon\Carbon;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Hash;
+use DB;
+use Illuminate\Database\QueryException;
 
 class BaseService
 {
@@ -44,9 +47,9 @@ class BaseService
         if (! $query) {
             $query = $this->model->query();
         }
-        $limit = $input['limit'] ?? UtilConstant::LIMIT_RECORD;
-        $column = $input['column'] ?? UtilConstant::COLUMN_DEFAULT;
-        $order = $input['order'] ?? UtilConstant::ORDER_TYPE;
+        $limit = $input['limit'] ?? PaginationConstant::LIMIT_RECORD;
+        $column = $input['column'] ?? PaginationConstant::COLUMN_DEFAULT;
+        $order = $input['order'] ?? PaginationConstant::ORDER_TYPE;
 
         $data = $query->orderBy($column, $order)->paginate($limit);
 
@@ -94,13 +97,18 @@ class BaseService
         return json_decode($decryptedData, true);
     }
 
-    protected function getColumn($data, $column = 'id')
+    protected function getCollections($data, $column = 'id', $type = DataTypeConstant::COLLECTIONS)
     {
         $items = [];
-        foreach ($data as $item) {
-            $items[] = $item->$column;
+        if($type == DataTypeConstant::COLLECTIONS) {
+            foreach ($data as $item) {
+                $items[] = $item->$column;
+            }
+        } else {
+            foreach ($data as $item) {
+                $items[] = $item[$column];
+            }
         }
-
         return $items;
     }
 
@@ -114,6 +122,8 @@ class BaseService
 
         return true;
     }
+
+
 
     public function customDate($dateString)
     {
@@ -142,13 +152,24 @@ class BaseService
         return $date;
     }
 
-    public function getBy($column="id", $data)
+    public function getBy($column="id", $value)
     {
-        return $this->model->where($column, $data)->first();
+        return $this->model->where($column, $value)->first();
     }
 
     public function sendMail($subject, $view, $data, $email) {
         SendMailQueue::dispatch($email, new SendMail($subject, $view, $data));
     }
 
+    public function makeTransaction(callable $tryFunction, callable $catchFunction) {
+        try {
+            DB::beginTransaction();
+            $result = $tryFunction();
+            DB::commit();
+            return $result;
+        } catch (QueryException $e) {
+            DB::rollBack();
+            return $catchFunction();
+        }
+    }
 }

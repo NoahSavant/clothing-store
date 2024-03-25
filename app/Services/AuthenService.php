@@ -16,6 +16,7 @@ class AuthenService extends BaseService
 
     public function __construct(UserService $userService) {
         $this->userService = $userService;
+        $this->model = null;
     }
 
     public function authenCreadentials($credentials)

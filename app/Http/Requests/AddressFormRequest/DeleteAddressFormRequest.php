@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\AuthenFormRequests;
+namespace App\Http\Requests\AddressFormRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LoginFormRequest extends FormRequest
+class DeleteAddressFormRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,9 +22,7 @@ class LoginFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6',
-            'remember' => 'boolean'
+            'ids' => 'required|array',
         ];
     }
 }
