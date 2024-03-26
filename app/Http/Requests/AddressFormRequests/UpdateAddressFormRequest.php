@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\AddressFormRequest;
+namespace App\Http\Requests\AddressFormRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateAddressFormRequest extends FormRequest
+class UpdateAddressFormRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,9 +22,8 @@ class CreateAddressFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'content' => 'required|string',
-            'url' => 'required|string',
+            'ids' => 'required|array',
+            'data' => 'required'
         ];
     }
 }

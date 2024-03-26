@@ -1,28 +1,37 @@
 <?php
 
 namespace App\Services;
+use App\Models\Block;
 
-use App\Constants\UserConstants\UserStatus;
-use App\Http\Resources\AddressInformation;
-use App\Models\Address;
-use App\Models\User;
-
-class AddressService extends BaseService
+class BlockService extends BaseService
 {
-    public function __construct(Address $address)
+    protected $variableService;
+
+    public function __construct(Block $block, VariableService $variableService)
     {
-        $this->model = $address;
+        $this->model = $block;
+        $this->variableService = $variableService;
     }
 
     public function get($input)
     {
         $search = $input['$search'] ?? '';
-        $user = auth()->user();
-        $query = $this->model->where('user_id', $user->id)->search($search);
+        $query = $this->model->whereNull('block_id')->search($search);
         $data = $this->getAll($input, $query);
-        $data['items'] = AddressInformation::collection($data['items']);
 
         return $data;
+    }
+
+    public function detail($block_id) {
+        $block = $this->model->where('id', $block_id)->first();
+
+        if (!$block) {
+            return [
+                'errorMessage' => 'Block not found'
+            ];
+        }
+
+        $variables = $block->variables(); 
     }
 
     public function create($data) {
@@ -77,15 +86,16 @@ class AddressService extends BaseService
 
         if (!empty ($invalidIds)) {
             return [
-                'errorMessage' => 'Not found address id ' . implode(', ', $invalidIds)
+                'errorMessage' => 'Not found block id ' . implode(', ', $invalidIds)
             ];
         }
 
         $result = parent::delete($ids);
 
+
         if (!$result) {
             return [
-                'errorMessage' => 'Delete address fail'
+                'errorMessage' => 'Delete block fail'
             ];
         }
 

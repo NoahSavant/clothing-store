@@ -35,4 +35,44 @@ class Block extends Model
     {
         return $this->morphMany(Variable::class, 'variablemorph');
     }
+
+    public function scopeSearch($query, $search)
+    {
+        if ($search === '') {
+            return $query;
+        }
+
+        $keywords = explode(',', $search);
+
+        $query->where(function ($query) use ($keywords) {
+            foreach ($keywords as $keyword) {
+                $keywordWithoutAccent = $this->removeAccents(mb_strtolower(trim($keyword)));
+                $query->orWhere(function ($query) use ($keywordWithoutAccent) {
+                    $query->whereRaw('LOWER(UNACCENT(name)) LIKE ?', ["%$keywordWithoutAccent%"]);
+                });
+            }
+        });
+
+        return $query;
+    }
+
+    public function scopeSearchInstance($query, $search)
+    {
+        if ($search === '') {
+            return $query;
+        }
+
+        $keywords = explode(',', $search);
+
+        $query->where(function ($query) use ($keywords) {
+            foreach ($keywords as $keyword) {
+                $keywordWithoutAccent = $this->removeAccents(mb_strtolower(trim($keyword)));
+                $query->orWhere(function ($query) use ($keywordWithoutAccent) {
+                    $query->whereRaw('LOWER(UNACCENT(name)) LIKE ?', ["%$keywordWithoutAccent%"]);
+                });
+            }
+        });
+
+        return $query;
+    }
 }

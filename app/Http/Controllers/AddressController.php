@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Constants\AuthenConstants\StatusResponse;
-use App\Http\Requests\AddressFormRequest\CreateAddressFormRequest;
-use App\Http\Requests\AddressFormRequest\DeleteAddressFormRequest;
-use App\Http\Requests\AddressFormRequest\UpdateAddressFormRequest;
+use App\Http\Requests\AddressFormRequests\CreateAddressFormRequest;
+use App\Http\Requests\AddressFormRequests\UpdateAddressFormRequest;
+use App\Http\Requests\DeleteFormRequest;
 use App\Services\AddressService;
 use Illuminate\Http\Request;
 
@@ -50,17 +50,17 @@ class AddressController extends Controller
         ], StatusResponse::SUCCESS);
     }
 
-    public function delete(DeleteAddressFormRequest $request) {
-        $result = $this->addressService->update($request->get('ids'), $request->get('data'));
+    public function delete(DeleteFormRequest $request) {
+        $result = $this->addressService->delete($request->get('ids'));
 
         if (!$result) {
             return response()->json([
-                'errorMessage' => 'Update address fail',
+                'errorMessage' => 'Delete address fail',
             ], StatusResponse::ERROR);
         }
 
         return response()->json([
-            'successMessage' => 'Update address successfully',
+            'successMessage' => 'Delete address successfully',
         ], StatusResponse::ERROR);
     }
 }
