@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->string('instant_name')->nullable();
+            $table->string('slug')->nullable();
             $table->unsignedBigInteger('block_id')->nullable()->default(null);
             $table->timestamps();
             $table->softDeletes();

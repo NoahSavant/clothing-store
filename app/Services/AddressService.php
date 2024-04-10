@@ -36,8 +36,12 @@ class AddressService extends BaseService
             'user_id' => auth()->user()->id
         ]));
 
-        if($result and $data['default']) {
-            $this->updateDefaultAddress($result->id);
+        if($result) {
+            if(isset ($data['default']) and $data['default']) {
+                $this->updateDefaultAddress($result->id);
+            } else {
+                $this->updateDefaultAddress(null);
+            }
         }
 
         return [
@@ -55,12 +59,26 @@ class AddressService extends BaseService
             ];
         }
 
-        if(isset($data['default']) and $data['default']) {
-            unset($data['default']);
-            $this->updateDefaultAddress(end($ids));
+        if (isset ($data['name']) and $data['name']) {
+            if ($this->isExisted($data['name'])) {
+                return [
+                    'errorMessage' => 'This name is existed'
+                ];
+            }
+
+            if (count($ids) > 1) {
+                return [
+                    'errorMessage' => 'Can not set the same name for multi address'
+                ];
+            }
         }
 
         $result = parent::update($ids, $data);
+
+        if ($result and isset ($data['default']) and $data['default']) {
+            unset($data['default']);
+            $this->updateDefaultAddress(end($ids));
+        }
 
         if(!$result) {
             return [
@@ -128,8 +146,7 @@ class AddressService extends BaseService
     }
 
     public function invalidItems($ids) {
-        $addresses = auth()->user()->addresses();
-
+        $addresses = $this->getCollections(auth()->user()->addresses);
         return array_diff($ids, $addresses);
     }
 }

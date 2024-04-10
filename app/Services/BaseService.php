@@ -8,6 +8,7 @@ use App\Constants\UtilConstants\PaginationConstant;
 use App\Jobs\SendMailQueue;
 use App\Mail\SendMail;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Hash;
@@ -123,35 +124,6 @@ class BaseService
         return true;
     }
 
-
-
-    public function customDate($dateString)
-    {
-        $date = $this->getDate($dateString);
-        $date->addHours(7);
-
-        return str_replace(' ', 'T', $date->toDateTimeString());
-
-    }
-
-    public function addSecond($date, $seconds)
-    {
-        if (is_string($date)) {
-            $date = $this->getDate($date);
-        }
-        $date->addSeconds($seconds);
-
-        return str_replace(' ', 'T', $date->toDateTimeString());
-    }
-
-    public function getDate($dateString)
-    {
-        $dateString = str_replace(' ', 'T', $dateString);
-        $date = Carbon::parse($dateString);
-
-        return $date;
-    }
-
     public function getBy($column="id", $value)
     {
         return $this->model->where($column, $value)->first();
@@ -171,5 +143,11 @@ class BaseService
             DB::rollBack();
             return $catchFunction();
         }
+    }
+
+    function convertToSlug($string)
+    {
+        $slug = Str::slug($string, '-');
+        return $slug;
     }
 }

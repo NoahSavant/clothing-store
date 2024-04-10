@@ -13,6 +13,7 @@ class ImportVariant extends Model
 
     protected $fillable = [
         'variant_id',
+        'import_id',
         'amount',
         'unit_price',
         'note',
@@ -21,5 +22,10 @@ class ImportVariant extends Model
     public function variant(): BelongsTo
     {
         return $this->belongsTo(Variant::class);
+    }
+
+    public function import(): BelongsTo
+    {
+        return $this->belongsTo(Import::class);
     }
 }

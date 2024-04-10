@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('import_variants', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('variant_id')->nullable();
+            $table->unsignedBigInteger('import_id')->nullable();
             $table->unsignedBigInteger('amount')->nullable();
             $table->unsignedBigInteger('unit_price')->nullable();
             $table->text('note')->nullable();
@@ -21,7 +22,7 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->foreign('variant_id')->references('id')->on('variants');
-
+            $table->foreign('import_id')->references('id')->on('imports');
         });
     }
 

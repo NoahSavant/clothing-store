@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class BlockInformation extends JsonResource
+class PageInformation extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,11 +17,10 @@ class BlockInformation extends JsonResource
         $data = [
             'id' => $this->id,
             'name' => $this->name,
-            'block_id' => $this->block_id,
-            'instance_name' => $this->instance_name,
-            'index' => $this->index,
+            'background' => $this->background,
             'hide' => $this->hide,
-            'variables' => VariableInformation::collection($this->variables)
+            'authen' => $this->authen,
+            'blocks' => BlockInformation::collection($this->blocks)
         ];
 
         return $data;

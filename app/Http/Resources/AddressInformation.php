@@ -15,6 +15,7 @@ class AddressInformation extends JsonResource
     public function toArray(Request $request): array
     {
         $data = [
+            'id' => $this->id,
             'default' => $this->default,
             'name' => $this->name,
             'content' => $this->content,

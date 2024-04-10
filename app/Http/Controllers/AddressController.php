@@ -37,9 +37,9 @@ class AddressController extends Controller
     }
 
     public function update(UpdateAddressFormRequest $request) {
-        $result = $this->addressService->update($request->all());
+        $result = $this->addressService->update($request->get('ids'), $request->get('data'));
 
-        if ($result['errorMessage']) {
+        if (isset($result['errorMessage'])) {
             return response()->json([
                 'errorMessage' => $result['errorMessage'],
             ], StatusResponse::ERROR);

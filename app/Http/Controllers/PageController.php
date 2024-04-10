@@ -3,27 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Constants\AuthenConstants\StatusResponse;
-use App\Http\Requests\BlockFormRequests\CreateBlockRequest;
 use App\Http\Requests\BlockFormRequests\CreateParentBlockRequest;
 use App\Http\Requests\DeleteFormRequest;
+use App\Http\Requests\PageFormRequests\CreatePageRequest;
 use App\Services\BlockService;
+use App\Services\PageService;
 use Illuminate\Http\Request;
 
-class BlockController extends Controller
+class PageController extends Controller
 {
-    protected $blockService;
+    protected $pageService;
 
-    public function __construct(BlockService $blockService) {
-        $this->blockService = $blockService;
+    public function __construct(PageService $pageService) {
+        $this->pageService = $pageService;
     }
 
     public function index(Request $request) {
-        return response()->json($this->blockService->get($request->all()), StatusResponse::SUCCESS);
+        return response()->json($this->pageService->get($request->all()), StatusResponse::SUCCESS);
     }
 
-    public function detail($blockId)
+    public function detail($slug)
     {
-        $result = $this->blockService->detail($blockId);
+        $result = $this->pageService->detail($slug);
 
         if ($result['errorMessage']) {
             return response()->json([
@@ -33,12 +34,11 @@ class BlockController extends Controller
 
         return response()->json([
             'data' => $result,
-            'successMessage' => 'Create block successfully'
         ], StatusResponse::SUCCESS);
     }
 
-    public function createParent(CreateParentBlockRequest $request) {
-        $result = $this->blockService->createParent($request->all());
+    public function create(CreatePageRequest $request) {
+        $result = $this->pageService->create($request->all());
 
         if($result['errorMessage']) {
             return response()->json([
@@ -47,24 +47,8 @@ class BlockController extends Controller
         }
 
         return response()->json([
-            'block' => $result['data'],
-            'successMessage' => 'Create block successfully' 
-        ], StatusResponse::SUCCESS);
-    }
-
-    public function create(CreateBlockRequest $request)
-    {
-        $result = $this->blockService->createBlock($request->get('block_id'), $request->get('page_id'));
-
-        if ($result['errorMessage']) {
-            return response()->json([
-                'errorMessage' => $result['errorMessage'],
-            ], StatusResponse::ERROR);
-        }
-
-        return response()->json([
-            'block' => $result['data'],
-            'successMessage' => 'Create block successfully'
+            'page' => $result['data'],
+            'successMessage' => 'Create page successfully' 
         ], StatusResponse::SUCCESS);
     }
 

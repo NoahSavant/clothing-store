@@ -1,6 +1,11 @@
 <?php
 
+use App\Constants\UserConstants\UserRole;
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthenController;
+use App\Http\Controllers\BlockController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\VariableController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,17 +29,45 @@ Route::post('/active-account', [AuthenController::class, 'activeAccount'])->name
 Route::post('/reset-password', [AuthenController::class, 'resetPassword'])->name('resetPassword');
 Route::post('/refresh', [AuthenController::class, 'refresh'])->name('refresh');
 
+Route::controller(PageController::class)->prefix('pages')->group(function () {
+    Route::get('/{slug}', 'detail')->name('getPageDetail');
+});
 
 Route::middleware('auth:api')->group(function () {
-    // Route::middleware('author:' . UserRole::ADMIN)->group(function () {
-    //     Route::controller(UserController::class)->prefix('users')->group(function () {
-    //         Route::get('/', [UserController::class,'index'])->name('getAllUser');
+    Route::middleware('author:' . UserRole::ADMIN)->group(function () {
+        Route::controller(BlockController::class)->prefix('blocks')->group(function () {
+            Route::get('/','index')->name('getAllBlock');
 
-    //     });
-    // });
+        });
+    });
 
-    Route::controller(UserController::class)->prefix('users')->group(function () {
-        Route::get('/', 'index')->name('getAllUser');
-        Route::get('/dashboard', 'getDashboard')->name('getDashboard');
+    Route::controller(AddressController::class)->prefix('addresses')->group(function () {
+        Route::get('/', 'index')->name('getAllAddresses');
+        Route::post('/', 'create')->name('createAddresses');
+        Route::put('/', 'update')->name('updateAddresses');
+        Route::delete('/', 'delete')->name('deleteAddresses');
+    });
+
+    Route::controller(BlockController::class)->prefix('blocks')->group(function () {
+        Route::get('/', 'index')->name('getAllBlocks');
+        Route::get('/{blockId}', 'detail')->name('getBlockData');
+        Route::post('/create-parent', 'createParent')->name('createParentBlocks');
+        Route::post('/', 'create')->name('createBlocks');
+        Route::put('/', 'update')->name('updateBlocks');
+        Route::delete('/', 'delete')->name('deleteBlocks');
+    });
+
+    Route::controller(VariableController::class)->prefix('variables')->group(function () {
+        Route::get('/', 'index')->name('getAllBlocks');
+        Route::post('/', 'create')->name('createVariables');
+        Route::put('/', 'update')->name('updateBlocks');
+        Route::delete('/', 'delete')->name('deleteBlocks');
+    });
+
+    Route::controller(PageController::class)->prefix('pages')->group(function () {
+        Route::get('/', 'index')->name('getAllPages');
+        Route::post('/', 'create')->name('createPages');
+        Route::put('/', 'update')->name('updateBlocks');
+        Route::delete('/', 'delete')->name('deleteBlocks');
     });
 });

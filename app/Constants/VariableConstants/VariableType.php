@@ -18,4 +18,8 @@ class VariableType
 
     const REPEATER = 6;
 
+    const OBJECT = 7;
+
+    const TEMPLATE = 8;
+
 }

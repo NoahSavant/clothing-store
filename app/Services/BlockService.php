@@ -1,16 +1,23 @@
 <?php
 
 namespace App\Services;
+use App\Constants\VariableConstants\VariableParentType;
+use App\Http\Resources\BlockInformation;
 use App\Models\Block;
+use App\Models\Page;
+use App\Models\PageBlock;
 
 class BlockService extends BaseService
 {
     protected $variableService;
 
-    public function __construct(Block $block, VariableService $variableService)
+    protected $pageBlockService;
+
+    public function __construct(Block $block, VariableService $variableService, PageBlockService $pageBlockService)
     {
         $this->model = $block;
         $this->variableService = $variableService;
+        $this->pageBlockService = $pageBlockService;
     }
 
     public function get($input)
@@ -31,67 +38,111 @@ class BlockService extends BaseService
             ];
         }
 
-        $variables = $block->variables(); 
+        return new BlockInformation($block);
     }
 
-    public function create($data) {
+    public function createParent($data) {
         if($this->isExisted($data['name'])) {
             return [
-                'errorMessage' => 'This name is existed'
+                'errorMessage' => 'This block name is existed'
             ];
         }
 
-        $result = parent::create(array_merge($data, [
-            'user_id' => auth()->user()->id
-        ]));
-
-        if($result and $data['default']) {
-            $this->updateDefaultAddress($result->id);
-        }
+        $result = parent::create($data);
 
         return [
-            'errorMessage' => $result ? null : 'Create address fail',
+            'errorMessage' => $result ? null : 'Create block fail',
             'data' => $result
         ];
     }
 
-    public function update($ids, $data) {
-        $invalidIds = $this->invalidItems($ids);
+    public function createBlock($blockId, $pageId) {
+        $parentBlock = $this->model->where('id', $blockId)->first();
+        $page = Page::where('id', $pageId)->first();
 
-        if(!empty($invalidIds)) {
+        if (!$parentBlock) {
             return [
-                'errorMessage' => 'Not found address id ' . implode(', ', $invalidIds)
+                'errorMessage' => 'Block not found'
             ];
         }
 
-        if(isset($data['default']) and $data['default']) {
-            unset($data['default']);
-            $this->updateDefaultAddress(end($ids));
-        }
-
-        $result = parent::update($ids, $data);
-
-        if(!$result) {
+        if (!$page) {
             return [
-                'errorMessage' => 'Update address fail'
+                'errorMessage' => 'Page not found'
             ];
         }
 
-        return $result;
+        $block = $this->model->create([
+            'name' => $parentBlock->name,
+            'slug' => $parentBlock->slug,
+            'block_id' => $blockId
+        ]);
+
+        if (!$block) {
+            return [
+                'errorMessage' => 'Create block fail'
+            ];
+        }
+
+        foreach($parentBlock->variables as $variable) {
+            $this->variableService->makeCopyVariables($variable, $block->id, VariableParentType::BLOCK);
+        }
+
+        PageBlock::create([
+            'block_id' => $block->id,
+            'page_id' => $pageId,
+            'index' => $this->pageBlockService->getLastIndex($pageId) + 1
+        ]);
+
+        return new BlockInformation($block);
+    }
+
+    public function isBlockDataValid($data)
+    {
+        return isset($data['block_id']);
+    }
+
+    public function updateBlock($data, $pageId) {
+        if (!$this->isBlockDataValid($data)) {
+            return [
+                'errorMessage' => 'Invalid block data'
+            ];
+        }
+
+        $blockId = null;
+
+        if (isset($data['id'])) {
+            $block = $this->model->where('id', $data['id'])->first();
+
+            if (!$block) {
+                return [
+                    'errorMessage' => 'Block not found'
+                ];
+            }
+
+            $parentId = $data['id'];
+        } else {
+            $block = $this->createBlock($data['blockId'], $pageId);
+
+            if (!$block) {
+                return [
+                    'errorMessage' => 'Block create fails'
+                ];
+            }
+
+            $parentId = $block->id;
+        }
+
+        if ($data['variables'] != null) {
+            foreach ($data['variables'] as $variableData) {
+                $this->variableService->updateVariables($variableData, $parentId, VariableParentType::BLOCK);
+            }
+        }
     }
 
     public function delete($ids)
     {
-        $invalidIds = $this->invalidItems($ids);
-
-        if (!empty ($invalidIds)) {
-            return [
-                'errorMessage' => 'Not found block id ' . implode(', ', $invalidIds)
-            ];
-        }
-
         $result = parent::delete($ids);
-
 
         if (!$result) {
             return [
@@ -99,47 +150,11 @@ class BlockService extends BaseService
             ];
         }
 
-        $this->updateDefaultAddress(null);
-
         return $result;
     }
 
-    public function updateDefaultAddress($id)
+    public function isExisted($name)
     {
-        $userId = auth()->user()->id;
-
-        $this->makeTransaction(function () use ($userId, $id) {
-            $result = $this->model
-                ->where('user_id', $userId)
-                ->where('default', true)
-                ->update(['default' => false]);
-
-            if($result == 0 and $id == null) {
-                $this->model
-                    ->where('user_id', $userId)
-                    ->orderBy('id')
-                    ->limit(1)
-                    ->update(['default' => true]);
-            } else {
-                $this->model
-                    ->where('user_id', $userId)
-                    ->where('id', $id)
-                    ->update(['default' => true]);
-            }
-
-            return true;
-        }, function () {
-            return false;
-        });
-    }
-
-    public function isExisted($name) {
-        return $this->model->where('user_id', auth()->user()->id)->where('name', $name)->exists();
-    }
-
-    public function invalidItems($ids) {
-        $addresses = auth()->user()->addresses();
-
-        return array_diff($ids, $addresses);
+        return $this->model->where('name', $name)->whereNull('block_id')->exists();
     }
 }

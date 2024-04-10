@@ -1,75 +1,160 @@
 <?php
 
 namespace App\Services;
+use App\Constants\UtilConstants\DataTypeConstant;
+use App\Constants\VariableConstants\VariableParentType;
+use App\Constants\VariableConstants\VariableType;
+use App\Models\Block;
 use App\Models\Variable;
 
 class VariableService extends BaseService
 {
+    public $parentVariables = [VariableType::OBJECT, VariableType::REPEATER, VariableType::SELECT];
+
     public function __construct(Variable $variable)
     {
         $this->model = $variable;
     }
 
-    public function delete($ids)
+    public function create($data)
     {
-        $invalidIds = $this->invalidItems($ids);
+        $isParentExist = false;
+        if ($data['parent_type'] == VariableParentType::BLOCK) {
+            $isParentExist = $this->isBlockParentExist($data['parent_id']);
+        } else {
+            $isParentExist = $this->isVariableParentExist($data['parent_id']);
+        }
 
-        if (!empty ($invalidIds)) {
+        if (!$isParentExist) {
             return [
-                'errorMessage' => 'Not found block id ' . implode(', ', $invalidIds)
+                'errorMessage' => 'Not found parent id with this type' 
             ];
         }
 
+        $result = parent::create(array_merge($data, [
+            'variablemorph_id' => $data['parent_id'],
+            'variablemorph_type' => $data['parent_type'] == VariableParentType::BLOCK ? Block::class : Variable::class
+        ]));
+
+        return [
+            'errorMessage' => $result ? null : 'Create variable fail',
+            'data' => $result
+        ];
+    }
+
+    public function makeCopyVariables($variable, $parentId, $parentType=VariableParentType::VARIABLE) {
+        $newVariable = $this->model->create([
+            "key" => $variable->key,
+            "value" => $variable->value,
+            "type" => $variable->type,
+            'variablemorph_id' => $parentId,
+            'variablemorph_type' => $parentType == VariableParentType::BLOCK ? Block::class : Variable::class
+        ]);
+
+        if (!$newVariable) {
+            return [
+                'errorMessage' => 'Create variable fail'
+            ];
+        }
+
+        if (in_array($variable->type, $this->parentVariables)) {
+            foreach($variable->variables as $item) {
+                $this->makeCopyVariables($item, $newVariable->id);
+            }
+        }
+    }
+
+    public function isBlockParentExist($blockId) {
+        return Block::where('id', $blockId)->exists();
+    }
+
+    public function isVariableParentExist($variableId)
+    {
+        return Variable::where('id', $variableId)->whereIn('type', $this->parentVariables)->exists();
+    }
+
+    public function delete($ids)
+    {
         $result = parent::delete($ids);
-        
 
         if (!$result) {
             return [
-                'errorMessage' => 'Delete block fail'
+                'errorMessage' => 'Delete variable fail'
             ];
         }
-
-        $this->updateDefaultAddress(null);
 
         return $result;
     }
 
-    public function updateDefaultAddress($id)
+    public function isVariableUpdated($variable, $data) {
+        return $variable->key == $data['key'] or $variable->value == $data['value'] or $variable->type == $data['type'];
+    }
+
+    public function isVariableDataValid($data) {
+        return isset($data['key']) && isset($data['value']) && isset($data['type']);
+    }
+
+    public function updateVariables($data, $parentId, $parentType=VariableParentType::VARIABLE)
     {
-        $userId = auth()->user()->id;
+        if(!$this->isVariableDataValid($data)) {
+            return [
+                'errorMessage' => 'Invalid variable data'
+            ];
+        }
 
-        $this->makeTransaction(function () use ($userId, $id) {
-            $result = $this->model
-                ->where('user_id', $userId)
-                ->where('default', true)
-                ->update(['default' => false]);
+        $variableId = null;
 
-            if($result == 0 and $id == null) {
-                $this->model
-                    ->where('user_id', $userId)
-                    ->orderBy('id')
-                    ->limit(1)
-                    ->update(['default' => true]);
-            } else {
-                $this->model
-                    ->where('user_id', $userId)
-                    ->where('id', $id)
-                    ->update(['default' => true]);
+        if(isset($data['id'])) {
+            $variable = $this->model->where('id', $data['id'])->first();
+
+            if(!$variable) {
+                return [
+                    'errorMessage' => 'Variable not found'
+                ];
             }
 
-            return true;
-        }, function () {
-            return false;
-        });
-    }
+            if ($this->isVariableUpdated($variable, $data)) {
+                $this->model
+                    ->where('id', $data['id'])
+                    ->update([
+                        'key' => $data['key'],
+                        'value' => $data['value'],
+                        'type' => $data['type']
+                    ]);
+            }
 
-    public function isExisted($name) {
-        return $this->model->where('user_id', auth()->user()->id)->where('name', $name)->exists();
-    }
+            if (in_array($data['type'], $this->parentVariables)) {
+                $inputVariables = $data['variables'] ?? [];
+                $currentVariables = $variable->variables;
 
-    public function invalidItems($ids) {
-        $addresses = auth()->user()->addresses();
+                $deleteVariableIds = array_diff($this->getCollections($currentVariables), $this->getCollections($inputVariables));
 
-        return array_diff($ids, $addresses);
+                $this->delete($deleteVariableIds);
+            }
+
+            $variableId = $data['id'];
+        } else {
+            $variable = $this->create([
+                'key' => $data['key'],
+                'value' => $data['value'],
+                'type' => $data['type'],
+                'parent_id' => $parentId,
+                'parent_type' => $parentType,
+            ]);
+
+            if (!$variable) {
+                return [
+                    'errorMessage' => 'Variable create fails'
+                ];
+            }
+
+            $variableId = $variable->id;
+        }
+
+        if (in_array($data['type'], $this->parentVariables) and $data['variables'] != null) {
+            foreach ($data['variables'] as $variableData) {
+                $this->updateVariables($variableData, $variableId);
+            }
+        }
     }
 }
