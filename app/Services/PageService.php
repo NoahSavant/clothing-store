@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use App\Constants\UtilConstants\DataTypeConstant;
 use App\Constants\VariableConstants\VariableParentType;
 use App\Http\Resources\BlockInformation;
 use App\Http\Resources\PageInformation;
@@ -12,10 +13,13 @@ class PageService extends BaseService
 {
     protected $blockService;
 
-    public function __construct(Page $page, BlockService $blockService)
+    protected $pageBlockService;
+
+    public function __construct(Page $page, BlockService $blockService, PageBlockService $pageBlockService)
     {
         $this->model = $page;
         $this->blockService = $blockService;
+        $this->pageBlockService = $pageBlockService;
     }
 
     public function get($input)
@@ -57,11 +61,6 @@ class PageService extends BaseService
         ];
     }
 
-    public function isPageUpdated($page, $data)
-    {
-        return $page->name == $data['name'] or $page->background == $data['background'] or $page->hide == $data['hide'] or $page->authen == $data['authen'];
-    }
-
     public function updatePage($data) {
         $page = $this->model->where('id', $data['id'])->first();
 
@@ -71,56 +70,36 @@ class PageService extends BaseService
             ];
         }
 
-        if ($this->isPageUpdated($page, $data)) {
-            if ($this->model->where('slug', $this->convertToSlug($data['name']))->whereNot('id', $data['id'])->exists()) {
-                return [
-                    'errorMessage' => 'This page name is existed'
-                ];
-            }
-
-            $this->model
-                ->where('id', $data['id'])
-                ->update([
-                    'key' => $data['key'],
-                    'value' => $data['value'],
-                    'type' => $data['type']
-                ]);
+        if ($this->model->where('slug', $this->convertToSlug($data['name']))->whereNot('id', $data['id'])->exists()) {
+            return [
+                'errorMessage' => 'This page name is existed'
+            ];
         }
+
+        $this->model
+            ->where('id', $data['id'])
+            ->update([
+                'name' => $data['name'],
+                'slug' => $this->convertToSlug($data['name']),
+                'background' => $data['background'],
+                'hide' => $data['hide'],
+                'authen' => $data['authen']
+            ]);
 
         $inputBlocks = $data['blocks'] ?? [];
         $currentBlocks = $page->blocks;
 
-        $deleteBlockIds = array_diff($this->getCollections($currentBlocks), $this->getCollections($inputBlocks));
+        $deleteBlockIds = array_diff($this->getCollections($currentBlocks), $this->getCollections($inputBlocks, 'id', DataTypeConstant::ARRAYS));
 
-        $this->delete($deleteBlockIds);
+        $this->pageBlockService->deletePageBlock($deleteBlockIds, $data['id']);
 
-        $variableId = $data['id'];
-
-        if (isset($data['id'])) {
-            
-        } else {
-            $variable = $this->create([
-                'key' => $data['key'],
-                'value' => $data['value'],
-                'type' => $data['type'],
-                'parent_id' => $parentId,
-                'parent_type' => $parentType,
-            ]);
-
-            if (!$variable) {
-                return [
-                    'errorMessage' => 'Variable create fails'
-                ];
-            }
-
-            $variableId = $variable->id;
-        }
-
-        if (in_array($data['type'], $this->parentVariables) and $data['variables'] != null) {
-            foreach ($data['variables'] as $variableData) {
-                $this->updateVariables($variableData, $variableId);
+        if ($data['blocks'] != null) {
+            foreach ($data['blocks'] as $blockData) {
+                $this->blockService->updateBlock($blockData, $data['id']);
             }
         }
+
+        return $this->detail($this->convertToSlug($data['name']));
     }
 
     public function delete($ids)

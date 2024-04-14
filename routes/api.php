@@ -4,6 +4,7 @@ use App\Constants\UserConstants\UserRole;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthenController;
 use App\Http\Controllers\BlockController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\VariableController;
 use Illuminate\Http\Request;
@@ -67,6 +68,13 @@ Route::middleware('auth:api')->group(function () {
     Route::controller(PageController::class)->prefix('pages')->group(function () {
         Route::get('/', 'index')->name('getAllPages');
         Route::post('/', 'create')->name('createPages');
+        Route::put('/', 'update')->name('updateBlocks');
+        Route::delete('/', 'delete')->name('deleteBlocks');
+    });
+
+    Route::controller(FileController::class)->prefix('files')->group(function () {
+        Route::get('/', 'index')->name('getAllPages');
+        Route::post('/', 'upload')->name('uploadFiles');
         Route::put('/', 'update')->name('updateBlocks');
         Route::delete('/', 'delete')->name('deleteBlocks');
     });

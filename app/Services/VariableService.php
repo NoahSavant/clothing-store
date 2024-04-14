@@ -127,8 +127,7 @@ class VariableService extends BaseService
                 $inputVariables = $data['variables'] ?? [];
                 $currentVariables = $variable->variables;
 
-                $deleteVariableIds = array_diff($this->getCollections($currentVariables), $this->getCollections($inputVariables));
-
+                $deleteVariableIds = array_diff($this->getCollections($currentVariables), $this->getCollections($inputVariables, 'id', DataTypeConstant::ARRAYS));
                 $this->delete($deleteVariableIds);
             }
 
@@ -140,7 +139,7 @@ class VariableService extends BaseService
                 'type' => $data['type'],
                 'parent_id' => $parentId,
                 'parent_type' => $parentType,
-            ]);
+            ])['data'];
 
             if (!$variable) {
                 return [

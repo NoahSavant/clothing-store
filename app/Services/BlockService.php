@@ -97,22 +97,11 @@ class BlockService extends BaseService
         return new BlockInformation($block);
     }
 
-    public function isBlockDataValid($data)
-    {
-        return isset($data['block_id']);
-    }
-
     public function updateBlock($data, $pageId) {
-        if (!$this->isBlockDataValid($data)) {
-            return [
-                'errorMessage' => 'Invalid block data'
-            ];
-        }
-
-        $blockId = null;
+        $parentId = null;
 
         if (isset($data['id'])) {
-            $block = $this->model->where('id', $data['id'])->first();
+            $block = $this->model->where('id', $data['id'])->whereNotNull('block_id')->first();
 
             if (!$block) {
                 return [
@@ -120,9 +109,11 @@ class BlockService extends BaseService
                 ];
             }
 
+            $this->pageBlockService->updateIndex($block->id, $pageId, $data['index']);
+
             $parentId = $data['id'];
         } else {
-            $block = $this->createBlock($data['blockId'], $pageId);
+            $block = $this->createBlock($data['block_id'], $pageId);
 
             if (!$block) {
                 return [

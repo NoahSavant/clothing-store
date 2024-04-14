@@ -103,11 +103,15 @@ class BaseService
         $items = [];
         if($type == DataTypeConstant::COLLECTIONS) {
             foreach ($data as $item) {
-                $items[] = $item->$column;
+                if (isset($item->$column)) {
+                    $items[] = $item->$column;
+                }
             }
         } else {
             foreach ($data as $item) {
-                $items[] = $item[$column];
+                if(isset($item[$column])) {
+                    $items[] = $item[$column];
+                }
             }
         }
         return $items;
