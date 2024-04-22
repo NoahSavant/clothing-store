@@ -18,4 +18,37 @@ class FileType
 
     const SVG = 6;
 
+    public static function getFileType($mime) {
+        $fileType = null;
+        switch ($mime) {
+            case 'image/jpeg':
+            case 'image/png':
+            case 'image/gif':
+                $fileType = self::IMAGE;
+                break;
+            case 'video/mp4':
+            case 'video/quicktime':
+                $fileType = self::VIDEO;
+                break;
+            case 'application/pdf':
+                $fileType = self::PDF;
+                break;
+            case 'application/msword':
+                $fileType = self::DOC;
+                break;
+            case 'text/csv':
+                $fileType = self::CSV;
+                break;
+            case 'image/svg+xml':
+                $fileType = self::SVG;
+                break;
+            default:
+                // Unsupported file type
+                return [
+                    'errorMessage' => 'Unsupported file type'
+                ];
+        }
+
+        return $fileType;
+    }
 }

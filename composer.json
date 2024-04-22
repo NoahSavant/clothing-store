@@ -5,10 +5,10 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^7.2",
+        "php": "^7.2||^8.2",
+        "cloudinary-labs/cloudinary-laravel": "^2.1",
         "defuse/php-encryption": "^2.4",
         "guzzlehttp/guzzle": "^7.2",
-        "jrm2k6/cloudder": "^0.7.0",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",

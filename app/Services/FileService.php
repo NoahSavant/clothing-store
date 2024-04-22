@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Constants\FileConstants\FileType;
 use App\Constants\UserConstants\UserStatus;
 use App\Http\Resources\AddressInformation;
 use App\Models\File;
@@ -26,26 +27,43 @@ class FileService extends BaseService
     }
 
     public function upload($data) {
-        $result = Cloudinary::upload($data['file']->getRealPath(), [
+        $result = Cloudinary::uploadFile($data->file('file')->getRealPath(), [
             'folder' => 'files',
         ]);
 
-        dd($result);
+        $url = $result->getSecurePath();
 
-        $result = parent::create(array_merge($data, [
-            'user_id' => auth()->user()->id
+        if(!$url) {
+            return [
+                'errorMessage' => 'Upload image fail'
+            ];
+        }
+
+        $name = null;
+
+        if($data->has('name')) {
+            if($this->isExisted($data->get('name'))) {
+                $name = $data->get('name') . '_' . time();
+            } else {
+                $name = $data->get('name');
+            }
+        } else {
+            $name = 'file_' . time();
+        }
+
+        $result = parent::create(array_merge($data->all(), [
+            'name' => $name,
+            'url' => $url,
+            'type' => FileType::getFileType($data->file('file')->getMimeType())
         ]));
 
-        if($result) {
-            if(isset ($data['default']) and $data['default']) {
-                $this->updateDefaultAddress($result->id);
-            } else {
-                $this->updateDefaultAddress(null);
-            }
+        if(!$result) {
+            return [
+                'errorMessage' => 'Store file fail'
+            ];
         }
 
         return [
-            'errorMessage' => $result ? null : 'Create address fail',
             'data' => $result
         ];
     }
@@ -142,7 +160,7 @@ class FileService extends BaseService
     }
 
     public function isExisted($name) {
-        return $this->model->where('user_id', auth()->user()->id)->where('name', $name)->exists();
+        return $this->model->where('name', $name)->exists();
     }
 
     public function invalidItems($ids) {

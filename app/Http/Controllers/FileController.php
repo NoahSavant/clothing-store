@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Constants\AuthenConstants\StatusResponse;
 use App\Http\Requests\DeleteFormRequest;
-use App\Http\Requests\VariableFormRequests\CreateVariableRequest;
 use App\Services\FileService;
-use App\Services\VariableService;
 use Illuminate\Http\Request;
 
 class FileController extends Controller
@@ -18,16 +16,17 @@ class FileController extends Controller
     }
 
     public function upload(Request $request) {
-        $result = $this->fileService->upload($request->all());
 
-        if($result['errorMessage']) {
+        $result = $this->fileService->upload($request);
+
+        if(isset($result['errorMessage'])) {
             return response()->json([
                 'errorMessage' => $result['errorMessage'],
             ], StatusResponse::ERROR);
         }
 
         return response()->json([
-            'variable' => $result['data'],
+            'data' => $result['data'],
             'successMessage' => 'Upload file successfully' 
         ], StatusResponse::SUCCESS);
     }
