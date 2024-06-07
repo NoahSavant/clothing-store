@@ -24,6 +24,7 @@ class FileType
             case 'image/jpeg':
             case 'image/png':
             case 'image/gif':
+            case 'image/webp':
                 $fileType = self::IMAGE;
                 break;
             case 'video/mp4':
@@ -44,9 +45,7 @@ class FileType
                 break;
             default:
                 // Unsupported file type
-                return [
-                    'errorMessage' => 'Unsupported file type'
-                ];
+                return "Unknown";
         }
 
         return $fileType;

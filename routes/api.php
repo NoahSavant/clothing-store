@@ -29,6 +29,12 @@ Route::post('/send-verify', [AuthenController::class, 'sendVerify'])->name('send
 Route::post('/active-account', [AuthenController::class, 'activeAccount'])->name('activeAccount');
 Route::post('/reset-password', [AuthenController::class, 'resetPassword'])->name('resetPassword');
 Route::post('/refresh', [AuthenController::class, 'refresh'])->name('refresh');
+Route::controller(FileController::class)->prefix('files')->group(function () {
+    Route::get('/', 'index')->name('getAllPages');
+    Route::post('/', 'upload')->name('uploadFiles');
+    Route::put('/', 'update')->name('updateBlocks');
+    Route::delete('/', 'delete')->name('deleteBlocks');
+});
 
 Route::controller(PageController::class)->prefix('pages')->group(function () {
     Route::get('/{slug}', 'detail')->name('getPageDetail');
@@ -68,13 +74,6 @@ Route::middleware('auth:api')->group(function () {
     Route::controller(PageController::class)->prefix('pages')->group(function () {
         Route::get('/', 'index')->name('getAllPages');
         Route::post('/', 'create')->name('createPages');
-        Route::put('/', 'update')->name('updateBlocks');
-        Route::delete('/', 'delete')->name('deleteBlocks');
-    });
-
-    Route::controller(FileController::class)->prefix('files')->group(function () {
-        Route::get('/', 'index')->name('getAllPages');
-        Route::post('/', 'upload')->name('uploadFiles');
         Route::put('/', 'update')->name('updateBlocks');
         Route::delete('/', 'delete')->name('deleteBlocks');
     });
