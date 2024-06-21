@@ -7,6 +7,8 @@ use App\Constants\UtilConstants\DataTypeConstant;
 use App\Constants\UtilConstants\PaginationConstant;
 use App\Jobs\SendMailQueue;
 use App\Mail\SendMail;
+use App\Constants\FileConstants\FileType;
+use App\Models\File;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Defuse\Crypto\Crypto;
@@ -14,6 +16,8 @@ use Defuse\Crypto\Key;
 use Hash;
 use DB;
 use Illuminate\Database\QueryException;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 
 class BaseService
 {
@@ -153,5 +157,49 @@ class BaseService
     {
         $slug = Str::slug($string, '-');
         return $slug;
+    }
+
+    public function uploadFile($file, $name="unknown", $category=null, $morphId=null, $morphType=null)
+    {
+        $result = Cloudinary::uploadFile($file->getRealPath(), [
+            'folder' => 'files',
+        ]);
+
+        $url = $result->getSecurePath();
+
+        if (!$url) {
+            return [
+                'errorMessage' => 'Upload file fail'
+            ];
+        }
+
+        $name = null;
+
+        if ($name) {
+            if ($this->isExisted($name)) {
+                $name = $name . '_' . time();
+            }
+        } else {
+            $name = 'file_' . time();
+        }
+
+        $result = File::create([
+            'name' => $name,
+            'url' => $url,
+            'type' => FileType::getFileType($file->getMimeType()),
+            'category' => $category,
+            'filemorph_id' => $morphId,
+            'filemorph_type' => $morphType,
+        ]);
+
+        if (!$result) {
+            return [
+                'errorMessage' => 'Store file fail'
+            ];
+        }
+
+        return [
+            'data' => $result
+        ];
     }
 }

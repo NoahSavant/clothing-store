@@ -7,6 +7,7 @@ use App\Http\Controllers\BlockController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\VariableController;
+use App\Http\Controllers\CategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,10 @@ Route::controller(FileController::class)->prefix('files')->group(function () {
     Route::delete('/', 'delete')->name('deleteBlocks');
 });
 
+Route::controller(CategoryController::class)->prefix('categories')->group(function () {
+    Route::get('/', 'index')->name('getAllCategories');
+});
+
 Route::controller(PageController::class)->prefix('pages')->group(function () {
     Route::get('/{slug}', 'detail')->name('getPageDetail');
 });
@@ -53,6 +58,12 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/', 'create')->name('createAddresses');
         Route::put('/', 'update')->name('updateAddresses');
         Route::delete('/', 'delete')->name('deleteAddresses');
+    });
+
+    Route::controller(CategoryController::class)->prefix('categories')->group(function () {
+        Route::post('/', 'create')->name('createCategories');
+        Route::put('/', 'update')->name('updateCategories');
+        Route::delete('/', 'delete')->name('deleteCategories');
     });
 
     Route::controller(BlockController::class)->prefix('blocks')->group(function () {
