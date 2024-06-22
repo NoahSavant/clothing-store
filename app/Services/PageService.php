@@ -24,7 +24,7 @@ class PageService extends BaseService
 
     public function get($input)
     {
-        $search = $input['$search'] ?? '';
+        $search = $input['search'] ?? '';
         $query = $this->model->search($search);
         $data = $this->getAll($input, $query);
 

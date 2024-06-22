@@ -15,6 +15,7 @@ class Rate extends Model
         'user_id',
         'ratemorph_id',
         'ratemorph_type',
+        'value'
     ];
 
     public function ratemorph()

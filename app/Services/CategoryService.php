@@ -18,7 +18,12 @@ class CategoryService extends BaseService
 
     public function get($input)
     {
-        $data = $this->model->all();
+        $search = $input['search'] ?? '';
+        $getAll = $input['all'] ?? false;
+
+        $query = $this->model->search($search);
+        $data = $this->getAll($input, $query, $getAll);
+
         return $data;
     }
 

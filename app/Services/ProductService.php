@@ -2,67 +2,58 @@
 
 namespace App\Services;
 
-use App\Constants\FileConstants\FileType;
+use App\Constants\FileConstants\FileCategory;
+use App\Constants\UserConstants\UserStatus;
 use App\Http\Resources\AddressInformation;
-use App\Models\File;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Models\Address;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\User;
 
-class FileService extends BaseService
+class ProductService extends BaseService
 {
-    public function __construct(File $file)
+    public function __construct(Product $product)
     {
-        $this->model = $file;
+        $this->model = $product;
     }
 
     public function get($input)
     {
-        $search = $input['search'] ?? '';
-        $user = auth()->user();
-        $query = $this->model->where('user_id', $user->id)->search($search);
-        $data = $this->getAll($input, $query);
-        $data['items'] = AddressInformation::collection($data['items']);
+        $search = $input['$search'] ?? '';
+        $tags = $input['tags'] ?? [];
+        $status = $input['status'] ?? null;
+        $collections = $input['collections'] ??  [];
 
+        $query = $this->model->search($search, $tags, $status, $collections);
+        $data = $this->getAll($input, $query);
         return $data;
     }
 
-    public function upload($data) {
-        $result = Cloudinary::uploadFile($data->file('file')->getRealPath(), [
-            'folder' => 'files',
-        ]);
-
-        $url = $result->getSecurePath();
-
-        if(!$url) {
+    public function create($data) {
+        if($this->isExisted($data['name'])) {
             return [
-                'errorMessage' => 'Upload image fail'
+                'errorMessage' => 'This name is existed'
             ];
         }
 
-        $name = null;
+        $image_url = "https://res.cloudinary.com/dvcdmxgyk/image/upload/v1718962708/files/mcouvshn7gcajzyudvqv.jpg";
 
-        if($data->has('name')) {
-            if($this->isExisted($data->get('name'))) {
-                $name = $data->get('name') . '_' . time();
-            } else {
-                $name = $data->get('name');
+        if($data->hasFile('image')) {
+            $result = $this->uploadFile($data->file('image'), 'category_' . $data->get('name'), FileCategory::CATEGORY);
+
+            if (isset($result['errorMessage'])) {
+                return $result;
             }
-        } else {
-            $name = 'file_' . time();
+
+            $image_url =  $result['data']['url'];
         }
 
         $result = parent::create(array_merge($data->all(), [
-            'name' => $name,
-            'url' => $url,
-            'type' => FileType::getFileType($data->file('file')->getMimeType())
+            'image_url' => $image_url
         ]));
 
-        if(!$result) {
-            return [
-                'errorMessage' => 'Store file fail'
-            ];
-        }
-
         return [
+            'errorMessage' => $result ? null : 'Create category fail',
             'data' => $result
         ];
     }

@@ -47,7 +47,7 @@ class BaseService
         return $this->model->where('id', $id)->first();
     }
 
-    public function getAll($input, $query = null)
+    public function getAll($input, $query = null, $getAll=false)
     {
         if (! $query) {
             $query = $this->model->query();
@@ -55,6 +55,10 @@ class BaseService
         $limit = $input['limit'] ?? PaginationConstant::LIMIT_RECORD;
         $column = $input['column'] ?? PaginationConstant::COLUMN_DEFAULT;
         $order = $input['order'] ?? PaginationConstant::ORDER_TYPE;
+
+        if($getAll) {
+            return $query->orderBy($column, $order)->get();
+        }
 
         $data = $query->orderBy($column, $order)->paginate($limit);
 

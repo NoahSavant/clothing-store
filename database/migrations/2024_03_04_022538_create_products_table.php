@@ -19,7 +19,8 @@ return new class extends Migration
             $table->unsignedBigInteger('brand_id')->nullable();
             $table->unsignedBigInteger('category_id')->nullable();
             $table->integer('status')->nullable();
-            $table->string('image_url')->nullable();
+            $table->string('first_image_url')->nullable();
+            $table->string('second_image_url')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
             $table->softDeletes();

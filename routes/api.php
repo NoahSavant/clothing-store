@@ -6,6 +6,8 @@ use App\Http\Controllers\AuthenController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\VariableController;
 use App\Http\Controllers\CategoryController;
 use Illuminate\Http\Request;
@@ -41,8 +43,16 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
     Route::get('/', 'index')->name('getAllCategories');
 });
 
+Route::controller(ProductController::class)->prefix('products')->group(function () {
+    Route::get('/', 'index')->name('getAllProducts');
+});
+
 Route::controller(PageController::class)->prefix('pages')->group(function () {
     Route::get('/{slug}', 'detail')->name('getPageDetail');
+});
+
+Route::controller(TagController::class)->prefix('tags')->group(function () {
+    Route::get('/', 'index')->name('getTags');
 });
 
 Route::middleware('auth:api')->group(function () {

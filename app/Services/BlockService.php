@@ -22,7 +22,7 @@ class BlockService extends BaseService
 
     public function get($input)
     {
-        $search = $input['$search'] ?? '';
+        $search = $input['search'] ?? '';
         $query = $this->model->whereNull('block_id')->search($search);
         $data = $this->getAll($input, $query);
 
