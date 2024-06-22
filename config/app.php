@@ -186,6 +186,7 @@ return [
         // 'Example' => App\Facades\Example::class,
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+        'Cloudder' => JD\Cloudder\Facades\Cloudder::class,
     ])->toArray(),
 
 ];

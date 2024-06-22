@@ -3,13 +3,21 @@
 namespace App\Services;
 
 use App\Constants\AuthenConstants\EncryptionKey;
-use App\Constants\UtilConstant;
+use App\Constants\UtilConstants\DataTypeConstant;
+use App\Constants\UtilConstants\PaginationConstant;
 use App\Jobs\SendMailQueue;
 use App\Mail\SendMail;
+use App\Constants\FileConstants\FileType;
+use App\Models\File;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
 use Hash;
+use DB;
+use Illuminate\Database\QueryException;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 
 class BaseService
 {
@@ -44,9 +52,9 @@ class BaseService
         if (! $query) {
             $query = $this->model->query();
         }
-        $limit = $input['limit'] ?? UtilConstant::LIMIT_RECORD;
-        $column = $input['column'] ?? UtilConstant::COLUMN_DEFAULT;
-        $order = $input['order'] ?? UtilConstant::ORDER_TYPE;
+        $limit = $input['limit'] ?? PaginationConstant::LIMIT_RECORD;
+        $column = $input['column'] ?? PaginationConstant::COLUMN_DEFAULT;
+        $order = $input['order'] ?? PaginationConstant::ORDER_TYPE;
 
         $data = $query->orderBy($column, $order)->paginate($limit);
 
@@ -94,13 +102,22 @@ class BaseService
         return json_decode($decryptedData, true);
     }
 
-    protected function getColumn($data, $column = 'id')
+    protected function getCollections($data, $column = 'id', $type = DataTypeConstant::COLLECTIONS)
     {
         $items = [];
-        foreach ($data as $item) {
-            $items[] = $item->$column;
+        if($type == DataTypeConstant::COLLECTIONS) {
+            foreach ($data as $item) {
+                if (isset($item->$column)) {
+                    $items[] = $item->$column;
+                }
+            }
+        } else {
+            foreach ($data as $item) {
+                if(isset($item[$column])) {
+                    $items[] = $item[$column];
+                }
+            }
         }
-
         return $items;
     }
 
@@ -115,40 +132,74 @@ class BaseService
         return true;
     }
 
-    public function customDate($dateString)
+    public function getBy($column="id", $value)
     {
-        $date = $this->getDate($dateString);
-        $date->addHours(7);
-
-        return str_replace(' ', 'T', $date->toDateTimeString());
-
-    }
-
-    public function addSecond($date, $seconds)
-    {
-        if (is_string($date)) {
-            $date = $this->getDate($date);
-        }
-        $date->addSeconds($seconds);
-
-        return str_replace(' ', 'T', $date->toDateTimeString());
-    }
-
-    public function getDate($dateString)
-    {
-        $dateString = str_replace(' ', 'T', $dateString);
-        $date = Carbon::parse($dateString);
-
-        return $date;
-    }
-
-    public function getBy($column="id", $data)
-    {
-        return $this->model->where($column, $data)->first();
+        return $this->model->where($column, $value)->first();
     }
 
     public function sendMail($subject, $view, $data, $email) {
         SendMailQueue::dispatch($email, new SendMail($subject, $view, $data));
     }
 
+    public function makeTransaction(callable $tryFunction, callable $catchFunction) {
+        try {
+            DB::beginTransaction();
+            $result = $tryFunction();
+            DB::commit();
+            return $result;
+        } catch (QueryException $e) {
+            DB::rollBack();
+            return $catchFunction();
+        }
+    }
+
+    function convertToSlug($string)
+    {
+        $slug = Str::slug($string, '-');
+        return $slug;
+    }
+
+    public function uploadFile($file, $name="unknown", $category=null, $morphId=null, $morphType=null)
+    {
+        $result = Cloudinary::uploadFile($file->getRealPath(), [
+            'folder' => 'files',
+        ]);
+
+        $url = $result->getSecurePath();
+
+        if (!$url) {
+            return [
+                'errorMessage' => 'Upload file fail'
+            ];
+        }
+
+        $name = null;
+
+        if ($name) {
+            if ($this->isExisted($name)) {
+                $name = $name . '_' . time();
+            }
+        } else {
+            $name = 'file_' . time();
+        }
+
+        $result = File::create([
+            'name' => $name,
+            'url' => $url,
+            'type' => FileType::getFileType($file->getMimeType()),
+            'category' => $category,
+            'filemorph_id' => $morphId,
+            'filemorph_type' => $morphType,
+        ]);
+
+        if (!$result) {
+            return [
+                'errorMessage' => 'Store file fail'
+            ];
+        }
+
+        return [
+            'data' => $result
+        ];
+    }
 }

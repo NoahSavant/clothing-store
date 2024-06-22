@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('addresses', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->boolean('default')->default(false);
             $table->string('name')->nullable();
             $table->string('content')->nullable();
+            $table->string('detail')->nullable();
             $table->string('url')->nullable();
             $table->timestamps();
             $table->softDeletes();
