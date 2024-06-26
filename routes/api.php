@@ -55,6 +55,11 @@ Route::controller(TagController::class)->prefix('tags')->group(function () {
     Route::get('/', 'index')->name('getTags');
 });
 
+Route::controller(TagController::class)->prefix('tags')->group(function () {
+    Route::post('/', 'create')->name('createTags');
+    Route::delete('/', 'delete')->name('deleteTags');
+});
+
 Route::middleware('auth:api')->group(function () {
     Route::middleware('author:' . UserRole::ADMIN)->group(function () {
         Route::controller(BlockController::class)->prefix('blocks')->group(function () {

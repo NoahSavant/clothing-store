@@ -19,7 +19,7 @@ class ProductService extends BaseService
 
     public function get($input)
     {
-        $search = $input['$search'] ?? '';
+        $search = $input['search'] ?? '';
         $tags = $input['tags'] ?? [];
         $status = $input['status'] ?? null;
         $collections = $input['collections'] ??  [];

@@ -34,10 +34,17 @@ class TagService extends BaseService
 
     public function create($data) {
         if(isset($data['id'])) {
+            $morphType = TagParent::getTagParent($data['parent_type']);
+            if ($this->isRelationshipExisted($data['id'], $morphType, $data['parent_id'])) {
+                return [
+                    'errorMessage' => 'This tag has been attached'
+                ];
+            }
+
             $result = UsedTag::create([
                 'tag_id' => $data['id'],
                 'tagmorph_id' => $data['parent_id'],
-                'tagmorph_type' => TagParent::getTagParent($data['parent_type'])
+                'tagmorph_type' => $morphType
             ]);
 
             return [
@@ -46,7 +53,7 @@ class TagService extends BaseService
             ];
         }
 
-        if($this->isExisted($data['name'], $data['parent_type'])) {
+        if($this->isExisted($data['name'])) {
             return [
                 'errorMessage' => 'This name is existed'
             ];
@@ -82,21 +89,50 @@ class TagService extends BaseService
 
     public function delete($ids)
     {
+        $tags = $this->model->whereIn('id', $ids)->get();
+        $usedTagIds = [];
+        foreach($tags as $tag) {
+            array_merge($usedTagIds, $this->getCollections($tag->usedTags));
+        }
+
+        $result = empty($usedTagIds) ? true : $this->deleteRelationShip($usedTagIds);
+
+        if (isset($result['errorMessage'])) {
+            return $result;
+        }
+
         $result = parent::delete($ids);
 
         if (!$result) {
             return [
-                'errorMessage' => 'Delete address fail'
+                'errorMessage' => 'Delete tag(s) fail'
             ];
         }
 
         return $result;
     }
 
-    public function isExisted($name, $parentType) {
-        return $this->model->where('name', $name)->where('tagmorph_type', TagParent::getTagParent($parentType))->exists();
+    public function deleteRelationShip($ids) {
+        $result = UsedTag::destroy($ids);
+
+        if (!$result) {
+            return [
+                'errorMessage' => 'Delete tag(s) attach fail'
+            ];
+        }
+
+        return $result;
     }
 
+    public function isExisted($name)
+    {
+        return $this->model->where('name', $name)->exists();
+    }
+
+    public function isRelationshipExisted($tagId, $parentType, $parentId)
+    {
+        return UsedTag::where('id', $tagId)->where('tagmorph_type', TagParent::getTagParent($parentType))->where('tagmorph_id', $parentId)->exists();
+    }
     public function invalidItems($ids) {
         $addresses = $this->getCollections(auth()->user()->addresses);
         return array_diff($ids, $addresses);

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tag extends Model
@@ -19,6 +20,11 @@ class Tag extends Model
     public function products()
     {
         return $this->morphedByMany(Product::class, 'tagmorph', 'used_tags');
+    }
+
+    public function usedTags(): HasMany
+    {
+        return $this->hasMany(UsedTag::class);
     }
 
     public function scopeSearch($query, $search)

@@ -14,15 +14,13 @@ return new class extends Migration
         Schema::create('variants', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id')->nullable();
-            $table->string('variant_name')->nullable();
             $table->string('size')->nullable();
             $table->string('color')->nullable();
-            $table->string('material')->nullable();
             $table->integer('status')->nullable();
             $table->unsignedBigInteger('original_price')->nullable();
             $table->unsignedBigInteger('price')->nullable();
-            $table->unsignedBigInteger('tax')->nullable();
             $table->integer('stock')->nullable();
+            $table->string('image_url')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
