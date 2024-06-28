@@ -4,6 +4,7 @@ use App\Constants\UserConstants\UserRole;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthenController;
 use App\Http\Controllers\BlockController;
+use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
@@ -23,7 +24,9 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
+Route::get('/csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
 Route::post('/login', [AuthenController::class, 'login'])->name('login');
 Route::post('/sign-up', [AuthenController::class, 'signUp'])->name('auth.signup');
 Route::get('/unauthenticated', [AuthenController::class, 'throwAuthenError'])->name('auth.authenError');
@@ -55,9 +58,32 @@ Route::controller(TagController::class)->prefix('tags')->group(function () {
     Route::get('/', 'index')->name('getTags');
 });
 
+Route::controller(DiscountController::class)->prefix('discounts')->group(function () {
+    Route::get('/', 'index')->name('getDiscounts');
+});
+// authen 
 Route::controller(TagController::class)->prefix('tags')->group(function () {
     Route::post('/', 'create')->name('createTags');
     Route::delete('/', 'delete')->name('deleteTags');
+    Route::put('/{id}', 'update')->name('updateTags');
+});
+
+Route::controller(CategoryController::class)->prefix('categories')->group(function () {
+    Route::post('/', 'create')->name('createCategories');
+    Route::put('/{id}', 'update')->name('updateCategories');
+    Route::delete('/', 'delete')->name('deleteCategories');
+});
+
+Route::controller(DiscountController::class)->prefix('discounts')->group(function () {
+    Route::post('/', 'create')->name('createDiscounts');
+    Route::put('/{id}', 'update')->name('updateDiscounts');
+    Route::delete('/', 'delete')->name('deleteDiscounts');
+});
+
+Route::controller(ProductController::class)->prefix('products')->group(function () {
+    Route::post('/', 'create')->name('createProducts');
+    Route::put('/{id}', 'update')->name('updateProducts');
+    Route::delete('/', 'delete')->name('deleteProducts');
 });
 
 Route::middleware('auth:api')->group(function () {
@@ -75,12 +101,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/', 'delete')->name('deleteAddresses');
     });
 
-    Route::controller(CategoryController::class)->prefix('categories')->group(function () {
-        Route::post('/', 'create')->name('createCategories');
-        Route::put('/', 'update')->name('updateCategories');
-        Route::delete('/', 'delete')->name('deleteCategories');
-    });
-
+    
     Route::controller(BlockController::class)->prefix('blocks')->group(function () {
         Route::get('/', 'index')->name('getAllBlocks');
         Route::get('/{blockId}', 'detail')->name('getBlockData');

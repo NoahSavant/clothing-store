@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('brands', function (Blueprint $table) {
+        Schema::create('attach_discounts', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->text('information')->nullable();
-            $table->string('image_url')->nullable();
+            $table->unsignedBigInteger('discount_id')->nullable();
+            $table->unsignedBigInteger('order_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('discount_id')->references('id')->on('discounts');
+            $table->foreign('order_id')->references('id')->on('orders');
         });
     }
 
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('branchs');
+        Schema::dropIfExists('attach_discounts');
     }
 };

@@ -8,13 +8,16 @@ use App\Http\Resources\AddressInformation;
 use App\Models\Address;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\UsedTag;
 use App\Models\User;
 
 class ProductService extends BaseService
 {
-    public function __construct(Product $product)
+    protected $variantService;
+    public function __construct(Product $product, VariantService $variantService)
     {
         $this->model = $product;
+        $this->variantService = $variantService;
     }
 
     public function get($input)
@@ -36,24 +39,78 @@ class ProductService extends BaseService
             ];
         }
 
-        $image_url = "https://res.cloudinary.com/dvcdmxgyk/image/upload/v1718962708/files/mcouvshn7gcajzyudvqv.jpg";
+        $first_image_url = "https://res.cloudinary.com/dvcdmxgyk/image/upload/v1718962708/files/mcouvshn7gcajzyudvqv.jpg";
+        $second_image_url = "https://res.cloudinary.com/dvcdmxgyk/image/upload/v1718962708/files/mcouvshn7gcajzyudvqv.jpg";
 
-        if($data->hasFile('image')) {
-            $result = $this->uploadFile($data->file('image'), 'category_' . $data->get('name'), FileCategory::CATEGORY);
+        if($data->hasFile('first_image')) {
+            $result = $this->uploadFile($data->file('first_image'), 'product_' . $data->get('name'), FileCategory::PRODUCT);
 
             if (isset($result['errorMessage'])) {
                 return $result;
             }
 
-            $image_url =  $result['data']['url'];
+            $first_image_url =  $result['data']['url'];
         }
 
-        $result = parent::create(array_merge($data->all(), [
-            'image_url' => $image_url
-        ]));
+        if ($data->hasFile('second_image')) {
+            $result = $this->uploadFile($data->file('second_image'), 'product_' . $data->get('name'), FileCategory::PRODUCT);
+
+            if (isset($result['errorMessage'])) {
+                return $result;
+            }
+
+            $second_image_url = $result['data']['url'];
+        }
+
+
+        $product = parent::create([
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'short_description' => $data['short_description'],
+            'brand_id' => $data['brand_id'],
+            'category_id' => $data['category_id'],
+            'status' => $data['status'],
+            'first_image_url' => $first_image_url,
+            'second_image_url' => $second_image_url,
+            'note' => $data['note'],
+        ]);
+
+        if(!$product) {
+            return [
+                'errorMessage' => 'Create product fail',
+            ];
+        }
+
+        if ($data->has('tags')) {
+            foreach ($data['tags'] as $tag) {
+                UsedTag::create([
+                    'tag_id' => $tag,
+                    'tagmorph_id' => $product->id,
+                    'tagmorph_type' => Product::class
+                ]);
+            }
+        }
+
+        $error = 0;
+
+        if ($data->has('variants')) {
+            foreach ($data['variants'] as $variant) {
+                $result = $this->variantService->createVariant($product->id, $variant);
+                if(!$result['data']) {
+                    $error += 1;
+                }
+            }
+        }
+
+        if($error == 0) {
+            return [
+                'successMessage' => 'Create product successfully',
+                'data' => $result
+            ];
+        }
 
         return [
-            'errorMessage' => $result ? null : 'Create category fail',
+            'errorMessage' => 'Create product successfully but ' . $error . 'has fail to create',
             'data' => $result
         ];
     }
@@ -149,7 +206,10 @@ class ProductService extends BaseService
         });
     }
 
-    public function isExisted($name) {
+    public function isExisted($name, $id=null) {
+        if(!$id) {
+            return $this->model->where('name', $name)->whereNot('id', $id)->exists();
+        }
         return $this->model->where('name', $name)->exists();
     }
 

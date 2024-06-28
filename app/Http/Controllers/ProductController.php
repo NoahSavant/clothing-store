@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\AuthenConstants\StatusResponse;
-use App\Http\Requests\CategoryFormRequests\CreateCategoryFormRequest;
+use App\Http\Requests\ProductFormRequests\CreateProductFormRequest;
 use App\Services\CategoryService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
@@ -20,20 +20,17 @@ class ProductController extends Controller
         return response()->json($this->productService->get($request->all()), StatusResponse::SUCCESS);
     }
 
-    // public function create(CreateCategoryFormRequest $request) {
-    //     $result = $this->categoryService->create($request);
+    public function create(CreateProductFormRequest $request) {
+        $result = $this->productService->create($request);
 
-    //     if($result['errorMessage']) {
-    //         return response()->json([
-    //             'errorMessage' => $result['errorMessage'],
-    //         ], StatusResponse::ERROR);
-    //     }
+        if($result['errorMessage']) {
+            return response()->json([
+                'errorMessage' => $result['errorMessage'],
+            ], StatusResponse::ERROR);
+        }
 
-    //     return response()->json([
-    //         'category' => $result['data'],
-    //         'successMessage' => 'Create category successfully' 
-    //     ], StatusResponse::SUCCESS);
-    // }
+        return response()->json($result, StatusResponse::SUCCESS);
+    }
 
     // public function update(UpdateAddressFormRequest $request) {
     //     $result = $this->addressService->update($request->get('ids'), $request->get('data'));

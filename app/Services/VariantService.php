@@ -9,12 +9,13 @@ use App\Models\Address;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Variant;
 
-class CategoryService extends BaseService
+class VariantService extends BaseService
 {
-    public function __construct(Category $category)
+    public function __construct(Variant $variant)
     {
-        $this->model = $category;
+        $this->model = $variant;
     }
 
     public function get($input)
@@ -28,31 +29,45 @@ class CategoryService extends BaseService
         return $data;
     }
 
-    public function create($data) {
-        if($this->isExisted($data['name'])) {
-            return [
-                'errorMessage' => 'This name is existed'
-            ];
-        }
+    public function createVariant($productId, $data) {
+        $variantData = [
+            'product_id' => $productId,
+            'size' => $data['size'],
+            'color' => $data['color'],
+            'status' => $data['status'],
+            'original_price' => $data['original_price'],
+            'price' => $data['price'],
+            'stock' => $data['stock'],
+        ];
 
         $image_url = "https://res.cloudinary.com/dvcdmxgyk/image/upload/v1718962708/files/mcouvshn7gcajzyudvqv.jpg";
 
-        if($data->hasFile('image')) {
-            $result = $this->uploadFile($data->file('image'), 'category_' . $data->get('name'), FileCategory::CATEGORY);
+        if (isset($data['image'])) {
+            // Assuming you have a function to handle variant image upload
+            $result = $this->uploadFile($data['image'], 'variant_' . $data['size'] . '_' . $data['color'], FileCategory::VARIANT);
 
             if (isset($result['errorMessage'])) {
                 return $result;
             }
 
-            $image_url =  $result['data']['url'];
+            $image_url = $result['data']['url'];
         }
 
-        $result = parent::create(array_merge($data->all(), [
+
+
+        $result = $this->create([
+            'product_id' => $productId,
+            'size' => $data['size'],
+            'color' => $data['color'],
+            'status' => $data['status'],
+            'original_price' => $data['original_price'],
+            'price' => $data['price'],
+            'stock' => $data['stock'],
             'image_url' => $image_url
-        ]));
+        ]);
 
         return [
-            'errorMessage' => $result ? null : 'Create category fail',
+            'errorMessage' => $result ? null : 'Create variant fail',
             'data' => $result
         ];
     }

@@ -68,15 +68,16 @@ class TagService extends BaseService
     }
 
     public function update($id, $data) {
-        if (isset($data['name']) and $data['name']) {
-            if ($this->isExisted($data['name'], $data['parent_type'])) {
-                return [
-                    'errorMessage' => 'This name is existed'
-                ];
-            }
+        if ($this->isExisted($data['name'], $id)) {
+            return [
+                'errorMessage' => 'This name is existed'
+            ];
         }
 
-        $result = parent::update([$id], $data);
+        $result = parent::update([$id], [
+            'name' => $data['name'],
+            'color' => $data['color']
+        ]);
 
         if(!$result) {
             return [
@@ -124,8 +125,11 @@ class TagService extends BaseService
         return $result;
     }
 
-    public function isExisted($name)
+    public function isExisted($name, $id=null)
     {
+        if($id) {
+            return $this->model->where('name', $name)->whereNot('id', $id)->exists();
+        }
         return $this->model->where('name', $name)->exists();
     }
 
@@ -133,8 +137,5 @@ class TagService extends BaseService
     {
         return UsedTag::where('id', $tagId)->where('tagmorph_type', TagParent::getTagParent($parentType))->where('tagmorph_id', $parentId)->exists();
     }
-    public function invalidItems($ids) {
-        $addresses = $this->getCollections(auth()->user()->addresses);
-        return array_diff($ids, $addresses);
-    }
+    
 }

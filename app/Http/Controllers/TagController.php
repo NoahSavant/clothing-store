@@ -6,6 +6,7 @@ use App\Constants\AuthenConstants\StatusResponse;
 use App\Http\Requests\CategoryFormRequests\CreateCategoryFormRequest;
 use App\Http\Requests\DeleteFormRequest;
 use App\Http\Requests\TagFormRequests\CreateTagRequest;
+use App\Http\Requests\TagFormRequests\UpdateTagRequest;
 use App\Services\CategoryService;
 use App\Services\TagService;
 use Illuminate\Http\Request;
@@ -37,19 +38,19 @@ class TagController extends Controller
         ], StatusResponse::SUCCESS);
     }
 
-    // public function update(UpdateAddressFormRequest $request) {
-    //     $result = $this->addressService->update($request->get('ids'), $request->get('data'));
+    public function update($id, UpdateTagRequest $request) {
+        $result = $this->tagService->update($id, $request->all());
 
-    //     if (isset($result['errorMessage'])) {
-    //         return response()->json([
-    //             'errorMessage' => $result['errorMessage'],
-    //         ], StatusResponse::ERROR);
-    //     }
+        if (isset($result['errorMessage'])) {
+            return response()->json([
+                'errorMessage' => $result['errorMessage'],
+            ], StatusResponse::ERROR);
+        }
 
-    //     return response()->json([
-    //         'successMessage' => 'Update address successfully'
-    //     ], StatusResponse::SUCCESS);
-    // }
+        return response()->json([
+            'successMessage' => 'Update tag successfully'
+        ], StatusResponse::SUCCESS);
+    }
 
     public function delete(DeleteFormRequest $request) {
         $result = $this->tagService->delete($request->get('ids'));

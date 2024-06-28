@@ -6,15 +6,18 @@ use App\Constants\FileConstants\FileCategory;
 use App\Constants\UserConstants\UserStatus;
 use App\Http\Resources\AddressInformation;
 use App\Models\Address;
+use App\Models\AttachDiscount;
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\UserDiscount;
 
-class CategoryService extends BaseService
+class DiscountService extends BaseService
 {
-    public function __construct(Category $category)
+    public function __construct(Discount $discount)
     {
-        $this->model = $category;
+        $this->model = $discount;
     }
 
     public function get($input)
@@ -38,7 +41,7 @@ class CategoryService extends BaseService
         $image_url = "https://res.cloudinary.com/dvcdmxgyk/image/upload/v1718962708/files/mcouvshn7gcajzyudvqv.jpg";
 
         if($data->hasFile('image')) {
-            $result = $this->uploadFile($data->file('image'), 'category_' . $data->get('name'), FileCategory::CATEGORY);
+            $result = $this->uploadFile($data->file('image'), 'category_' . $data->get('name'), FileCategory::DISCOUNT);
 
             if (isset($result['errorMessage'])) {
                 return $result;
@@ -52,15 +55,15 @@ class CategoryService extends BaseService
         ]));
 
         return [
-            'errorMessage' => $result ? null : 'Create category fail',
+            'errorMessage' => $result ? null : 'Create discount fail',
             'data' => $result
         ];
     }
 
     public function update($id, $data)
     {
-        $category = $this->getFirst($id);
-        if (!$category) {
+        $discount = $this->getFirst($id);
+        if (!$discount) {
             return [
                 'errorMessage' => 'Category not found'
             ];
@@ -72,9 +75,9 @@ class CategoryService extends BaseService
             ];
         }
 
-        $image_url = $category->image_url;
+        $image_url = $discount->image_url;
         if ($data->hasFile('image')) {
-            $result = $this->uploadFile($data->file('image'), 'category_' . $data->get('name'), FileCategory::CATEGORY);
+            $result = $this->uploadFile($data->file('image'), 'discount_' . $data->get('name'), FileCategory::CATEGORY);
 
             if (isset($result['errorMessage'])) {
                 return $result;
@@ -85,26 +88,57 @@ class CategoryService extends BaseService
 
         $updateData = [
             'name' => $data['name'],
-            'image_url' => $image_url
+            'type' => $data['type'],
+            'subject' => $data['subject'],
+            'condition' => $data['condition'],
+            'value' => $data['value'],
+            'max_price' => $data['max_price'],
+            'status' => $data['status'],
+            'started_at' => $data['started_at'],
+            'ended_at' => $data['ended_at'],
+            'image_url' => $image_url,
         ];
 
         $result = parent::update([$id], $updateData);
 
         return [
             'errorMessage' => $result ? null : 'Update category fail',
-            'data' => $result ? $category : null
+            'data' => $result ? $discount : null
         ];
     }
 
     public function delete($ids)
     {
-        Product::whereIn('category_id', $ids)->update(['category_id' => null]);
+        $discounts = $this->model->whereIn('id', $ids)->get();
+        $attachDiscountIds = [];
+        foreach ($discounts as $discount) {
+            array_merge($attachDiscountIds, $this->getCollections($discount->userDiscounts));
+        }
+
+        $result = empty($attachDiscountIds) ? true : $this->deleteRelationShip($attachDiscountIds);
+
+        if (isset($result['errorMessage'])) {
+            return $result;
+        }
 
         $result = parent::delete($ids);
 
         if (!$result) {
             return [
-                'errorMessage' => 'Delete category failed'
+                'errorMessage' => 'Delete discount(s) fail'
+            ];
+        }
+
+        return $result;
+    }
+
+    public function deleteRelationShip($ids)
+    {
+        $result = UserDiscount::destroy($ids);
+
+        if (!$result) {
+            return [
+                'errorMessage' => 'Delete user discounts fail'
             ];
         }
 

@@ -15,4 +15,6 @@ class FileCategory
     const EVENT = 4;
 
     const CATEGORY = 5;
+
+    const DISCOUNT = 6;
 }

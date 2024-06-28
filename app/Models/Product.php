@@ -21,7 +21,8 @@ class Product extends Model
         'brand_id',
         'category_id',
         'status',
-        'image_url',
+        'first_image_url',
+        'second_image_url',
         'note',
     ];
 
@@ -68,7 +69,7 @@ class Product extends Model
     public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [])
     {
         // Eager load relationships to avoid N+1 query problem
-        $query->with(['tags', 'brand', 'category', 'comments', 'files', 'variants', 'collectionProducts']);
+        $query->with(['tags', 'category', 'comments', 'variants', 'collectionProducts']);
 
         if ($search === '') {
             return $query;

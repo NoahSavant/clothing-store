@@ -191,9 +191,7 @@ class BaseService
             'name' => $name,
             'url' => $url,
             'type' => FileType::getFileType($file->getMimeType()),
-            'category' => $category,
-            'filemorph_id' => $morphId,
-            'filemorph_type' => $morphType,
+            'category' => $category
         ]);
 
         if (!$result) {

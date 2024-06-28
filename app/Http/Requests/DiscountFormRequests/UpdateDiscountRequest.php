@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\CategoryFormRequests;
+namespace App\Http\Requests\DiscountFormRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCategoryFormRequest extends FormRequest
+class UpdateDiscountRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

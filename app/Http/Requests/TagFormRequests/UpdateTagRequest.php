@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\VariableFormRequests;
+namespace App\Http\Requests\TagFormRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,11 +22,8 @@ class UpdateTagRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required',
             'name' => 'required|string',
             'color' => 'required|string',
-            'parent_id' => 'required',
-            'parent_type' => 'required',
         ];
     }
 }

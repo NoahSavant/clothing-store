@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Constants\AuthenConstants\StatusResponse;
 use App\Http\Requests\CategoryFormRequests\CreateCategoryFormRequest;
+use App\Http\Requests\CategoryFormRequests\UpdateCategoryFormRequest;
+use App\Http\Requests\DeleteFormRequest;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
 
@@ -34,31 +36,33 @@ class CategoryController extends Controller
         ], StatusResponse::SUCCESS);
     }
 
-    // public function update(UpdateAddressFormRequest $request) {
-    //     $result = $this->addressService->update($request->get('ids'), $request->get('data'));
+    public function update(UpdateCategoryFormRequest $request, $id)
+    {
+        $result = $this->categoryService->update($id, $request);
 
-    //     if (isset($result['errorMessage'])) {
-    //         return response()->json([
-    //             'errorMessage' => $result['errorMessage'],
-    //         ], StatusResponse::ERROR);
-    //     }
+        if (isset($result['errorMessage'])) {
+            return response()->json([
+                'errorMessage' => $result['errorMessage'],
+            ], StatusResponse::ERROR);
+        }
 
-    //     return response()->json([
-    //         'successMessage' => 'Update address successfully'
-    //     ], StatusResponse::SUCCESS);
-    // }
+        return response()->json([
+            'successMessage' => 'Update category successfully'
+        ], StatusResponse::SUCCESS);
+    }
 
-    // public function delete(DeleteFormRequest $request) {
-    //     $result = $this->addressService->delete($request->get('ids'));
+    public function delete(DeleteFormRequest $request)
+    {
+        $result = $this->categoryService->delete($request->get('ids'));
 
-    //     if (!$result) {
-    //         return response()->json([
-    //             'errorMessage' => 'Delete address fail',
-    //         ], StatusResponse::ERROR);
-    //     }
+        if (!$result) {
+            return response()->json([
+                'errorMessage' => 'Delete category fail',
+            ], StatusResponse::ERROR);
+        }
 
-    //     return response()->json([
-    //         'successMessage' => 'Delete address successfully',
-    //     ], StatusResponse::ERROR);
-    // }
+        return response()->json([
+            'successMessage' => 'Delete category successfully',
+        ], StatusResponse::SUCCESS);
+    }
 }

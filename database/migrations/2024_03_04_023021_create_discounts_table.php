@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('discounts', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->nullable();
             $table->integer('type')->nullable();
             $table->integer('subject')->nullable();
             $table->integer('condition')->nullable();
