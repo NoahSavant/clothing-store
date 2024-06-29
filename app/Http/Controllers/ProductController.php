@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Constants\AuthenConstants\StatusResponse;
+use App\Http\Requests\DeleteFormRequest;
 use App\Http\Requests\ProductFormRequests\CreateProductFormRequest;
+use App\Http\Requests\ProductFormRequests\UpdateProductFormRequest;
 use App\Services\CategoryService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
@@ -23,7 +25,7 @@ class ProductController extends Controller
     public function create(CreateProductFormRequest $request) {
         $result = $this->productService->create($request);
 
-        if($result['errorMessage']) {
+        if(isset($result['errorMessage'])) {
             return response()->json([
                 'errorMessage' => $result['errorMessage'],
             ], StatusResponse::ERROR);
@@ -32,31 +34,43 @@ class ProductController extends Controller
         return response()->json($result, StatusResponse::SUCCESS);
     }
 
-    // public function update(UpdateAddressFormRequest $request) {
-    //     $result = $this->addressService->update($request->get('ids'), $request->get('data'));
+    public function get(Request $request, $id) {
+        $result = $this->productService->getSingle($id, $request);
 
-    //     if (isset($result['errorMessage'])) {
-    //         return response()->json([
-    //             'errorMessage' => $result['errorMessage'],
-    //         ], StatusResponse::ERROR);
-    //     }
+        if (!$result) {
+            return response()->json([
+                'errorMessage' => "This product is not exits",
+            ], StatusResponse::ERROR);
+        }
 
-    //     return response()->json([
-    //         'successMessage' => 'Update address successfully'
-    //     ], StatusResponse::SUCCESS);
-    // }
+        return response()->json($result, StatusResponse::SUCCESS);
+    }
 
-    // public function delete(DeleteFormRequest $request) {
-    //     $result = $this->addressService->delete($request->get('ids'));
+    public function update(UpdateProductFormRequest $request, $id) {
+        $result = $this->productService->update($id, $request);
 
-    //     if (!$result) {
-    //         return response()->json([
-    //             'errorMessage' => 'Delete address fail',
-    //         ], StatusResponse::ERROR);
-    //     }
+        if (isset($result['errorMessage'])) {
+            return response()->json([
+                'errorMessage' => $result['errorMessage'],
+            ], StatusResponse::ERROR);
+        }
 
-    //     return response()->json([
-    //         'successMessage' => 'Delete address successfully',
-    //     ], StatusResponse::ERROR);
-    // }
+        return response()->json([
+            'successMessage' => 'Update product successfully'
+        ], StatusResponse::SUCCESS);
+    }
+
+    public function delete(DeleteFormRequest $request) {
+        $result = $this->productService->delete($request->get('ids'));
+
+        if (!$result) {
+            return response()->json([
+                'errorMessage' => 'Delete product fail',
+            ], StatusResponse::ERROR);
+        }
+
+        return response()->json([
+            'successMessage' => 'Delete product successfully',
+        ], StatusResponse::SUCCESS);
+    }
 }

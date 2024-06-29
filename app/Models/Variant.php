@@ -21,16 +21,12 @@ class Variant extends Model
         'original_price',
         'price',
         'stock',
+        'image_url'
     ];
 
     public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
-    }
-
-    public function files():MorphMany
-    {
-        return $this->morphMany(File::class, 'filemorph');
     }
 
     public function importVariants(): HasMany

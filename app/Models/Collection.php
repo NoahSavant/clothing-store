@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -21,8 +22,29 @@ class Collection extends Model
         return $this->hasMany(CollectionProduct::class);
     }
 
-    public function tags()
+    public function products(): BelongsToMany
     {
-        return $this->morphMany(Tag::class, 'tagmorph');
+        return $this->belongsToMany(Product::class, 'collection_products');
+    }
+
+
+    public function scopeSearch($query, $search)
+    {
+        if ($search === '') {
+            return $query;
+        }
+
+        $keywords = explode(',', $search);
+
+        $query->where(function ($query) use ($keywords) {
+            foreach ($keywords as $keyword) {
+                $keywordWithoutAccent = $this->removeAccents(mb_strtolower(trim($keyword)));
+                $query->orWhere(function ($query) use ($keywordWithoutAccent) {
+                    $query->whereRaw('LOWER(UNACCENT(name)) LIKE ?', ["%$keywordWithoutAccent%"]);
+                });
+            }
+        });
+
+        return $query;
     }
 }

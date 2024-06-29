@@ -6,10 +6,10 @@ use App\Constants\FileConstants\FileCategory;
 use App\Constants\UserConstants\UserStatus;
 use App\Http\Resources\AddressInformation;
 use App\Models\Address;
-use App\Models\Category;
 use App\Models\Product;
 use App\Models\UsedTag;
 use App\Models\User;
+use Psy\Readline\Hoa\Console;
 
 class ProductService extends BaseService
 {
@@ -26,10 +26,17 @@ class ProductService extends BaseService
         $tags = $input['tags'] ?? [];
         $status = $input['status'] ?? null;
         $collections = $input['collections'] ??  [];
-
+        $collections = array_map('intval', $collections);
         $query = $this->model->search($search, $tags, $status, $collections);
         $data = $this->getAll($input, $query);
         return $data;
+    }
+
+    public function getSingle($id, $request)
+    {
+        $product = $this->model->singleProduct($id)->first();
+
+        return $product;
     }
 
     public function create($data) {
@@ -115,106 +122,99 @@ class ProductService extends BaseService
         ];
     }
 
-    public function update($ids, $data) {
-        $invalidIds = $this->invalidItems($ids);
-
-        if(!empty($invalidIds)) {
+    public function update($id, $data) {
+        if ($this->isExisted($data['name'], $id)) {
             return [
-                'errorMessage' => 'Not found address id ' . implode(', ', $invalidIds)
+                'errorMessage' => 'This name is existed'
             ];
         }
 
-        if (isset ($data['name']) and $data['name']) {
-            if ($this->isExisted($data['name'])) {
-                return [
-                    'errorMessage' => 'This name is existed'
-                ];
+        $updateData = [
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'short_description' => $data['short_description'],
+            'brand_id' => $data['brand_id'],
+            'category_id' => $data['category_id'],
+            'status' => $data['status'],
+            'note' => $data['note'],
+        ];
+
+        if ($data->hasFile('first_image')) {
+            $result = $this->uploadFile($data->file('first_image'), 'product_' . $data->get('name'), FileCategory::PRODUCT);
+
+            if (isset($result['errorMessage'])) {
+                return $result;
             }
 
-            if (count($ids) > 1) {
-                return [
-                    'errorMessage' => 'Can not set the same name for multi address'
-                ];
+            $updateData['first_image_url'] = $result['data']['url'];
+        }
+
+        if ($data->hasFile('second_image')) {
+            $result = $this->uploadFile($data->file('second_image'), 'product_' . $data->get('name'), FileCategory::PRODUCT);
+
+            if (isset($result['errorMessage'])) {
+                return $result;
             }
+
+            $updateData['second_image_url'] = $result['data']['url'];
         }
 
-        $result = parent::update($ids, $data);
 
-        if ($result and isset ($data['default']) and $data['default']) {
-            unset($data['default']);
-            $this->updateDefaultAddress(end($ids));
-        }
+        $product = parent::update([$id], $updateData);
 
-        if(!$result) {
+        if (!$product) {
             return [
-                'errorMessage' => 'Update address fail'
+                'errorMessage' => 'Update product fail',
             ];
         }
 
-        return $result;
+        if ($data->has('tags')) {
+            $currentTags = $this->getFirst($id)->tags->pluck('id')->toArray();
+
+            $newTags = $data['tags'] == 'null' ? [] : $data['tags'];
+
+            $tagsToDelete = array_diff($currentTags, $newTags);
+
+            $tagsToAdd = array_diff($newTags, $currentTags);
+
+            if (!empty($tagsToDelete)) {
+                UsedTag::where('tagmorph_id', $id)
+                    ->where('tagmorph_type', Product::class)
+                    ->whereIn('tag_id', $tagsToDelete)
+                    ->delete();
+            }
+
+            if (!empty($tagsToAdd)) {
+                foreach ($tagsToAdd as $tagId) {
+                    UsedTag::create([
+                        'tag_id' => $tagId,
+                        'tagmorph_id' => $id,
+                        'tagmorph_type' => Product::class,
+                    ]);
+                }
+            }
+        }
+
+        return true;
     }
 
     public function delete($ids)
     {
-        $invalidIds = $this->invalidItems($ids);
-
-        if (!empty ($invalidIds)) {
-            return [
-                'errorMessage' => 'Not found address id ' . implode(', ', $invalidIds)
-            ];
-        }
-
         $result = parent::delete($ids);
 
         if (!$result) {
             return [
-                'errorMessage' => 'Delete address fail'
+                'errorMessage' => 'Delete product fail'
             ];
         }
-
-        $this->updateDefaultAddress(null);
 
         return $result;
     }
 
-    public function updateDefaultAddress($id)
-    {
-        $userId = auth()->user()->id;
-
-        $this->makeTransaction(function () use ($userId, $id) {
-            $result = $this->model
-                ->where('user_id', $userId)
-                ->where('default', true)
-                ->update(['default' => false]);
-
-            if($result == 0 and $id == null) {
-                $this->model
-                    ->where('user_id', $userId)
-                    ->orderBy('id')
-                    ->limit(1)
-                    ->update(['default' => true]);
-            } else {
-                $this->model
-                    ->where('user_id', $userId)
-                    ->where('id', $id)
-                    ->update(['default' => true]);
-            }
-
-            return true;
-        }, function () {
-            return false;
-        });
-    }
-
     public function isExisted($name, $id=null) {
-        if(!$id) {
+        if($id) {
             return $this->model->where('name', $name)->whereNot('id', $id)->exists();
         }
         return $this->model->where('name', $name)->exists();
-    }
-
-    public function invalidItems($ids) {
-        $addresses = $this->getCollections(auth()->user()->addresses);
-        return array_diff($ids, $addresses);
     }
 }

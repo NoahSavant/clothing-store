@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\ProductFormRequests;
+namespace App\Http\Requests\VariantFormRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateProductFormRequest extends FormRequest
+class UpdateVariantFormRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,12 +22,12 @@ class UpdateProductFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'short_description' => 'required|string|max:255',
-            'category_id' => 'required|integer|exists:categories,id',
+            'size' => 'required|string|max:255',
+            'color' => 'nullable|string|max:255',
             'status' => 'required',
-            'note' => 'nullable|string',
+            'original_price' => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
         ];
     }
 }

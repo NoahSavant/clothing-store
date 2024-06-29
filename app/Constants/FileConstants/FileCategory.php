@@ -17,4 +17,6 @@ class FileCategory
     const CATEGORY = 5;
 
     const DISCOUNT = 6;
+
+    const COLLECTION = 7;
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\ProductFormRequests;
+namespace App\Http\Requests\CollectionFormRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateProductFormRequest extends FormRequest
+class CreateCollectionFormRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,12 +22,7 @@ class UpdateProductFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'short_description' => 'required|string|max:255',
-            'category_id' => 'required|integer|exists:categories,id',
-            'status' => 'required',
-            'note' => 'nullable|string',
+            'name' => 'required|string',
         ];
     }
 }

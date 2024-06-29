@@ -4,6 +4,7 @@ use App\Constants\UserConstants\UserRole;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthenController;
 use App\Http\Controllers\BlockController;
+use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\VariableController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\VariantController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -46,8 +48,17 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
     Route::get('/', 'index')->name('getAllCategories');
 });
 
+Route::controller(CollectionController::class)->prefix('collections')->group(function () {
+    Route::get('/', 'index')->name('getAllCategories');
+});
+
 Route::controller(ProductController::class)->prefix('products')->group(function () {
     Route::get('/', 'index')->name('getAllProducts');
+    Route::get('/{id}', 'get')->name('getSingleProduct');
+});
+
+Route::controller(VariantController::class)->prefix('variants')->group(function () {
+    Route::get('/{id}', 'index')->name('getAllVariants');
 });
 
 Route::controller(PageController::class)->prefix('pages')->group(function () {
@@ -74,6 +85,15 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
     Route::delete('/', 'delete')->name('deleteCategories');
 });
 
+Route::controller(CollectionController::class)->prefix('collections')->group(function () {
+    Route::post('/', 'create')->name('createCollection');
+    Route::put('/{id}', 'update')->name('updateCollection');
+    Route::delete('/', 'delete')->name('deleteCollection');
+    Route::get('/{id}', 'get')->name('getCollection');
+    Route::post('/{id}/update-product', 'updateProducts')->name('updateProduct');
+
+});
+
 Route::controller(DiscountController::class)->prefix('discounts')->group(function () {
     Route::post('/', 'create')->name('createDiscounts');
     Route::put('/{id}', 'update')->name('updateDiscounts');
@@ -84,6 +104,12 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
     Route::post('/', 'create')->name('createProducts');
     Route::put('/{id}', 'update')->name('updateProducts');
     Route::delete('/', 'delete')->name('deleteProducts');
+});
+
+Route::controller(VariantController::class)->prefix('variants')->group(function () {
+    Route::put('/{id}', 'update')->name('updateVariant');
+    Route::post('/{id}', 'create')->name('createVariant');
+    Route::delete('', 'delete')->name('deleteVariants');
 });
 
 Route::middleware('auth:api')->group(function () {

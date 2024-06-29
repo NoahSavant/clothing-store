@@ -6,6 +6,7 @@ use App\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -26,24 +27,26 @@ class Product extends Model
         'note',
     ];
 
+    protected $appends = ['average_rate', 'original_price', 'price'];
+
     public function collectionProducts(): HasMany
     {
         return $this->hasMany(CollectionProduct::class);
     }
 
-    public function comments()
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(Collection::class, 'collection_products');
+    }
+
+    public function comments(): MorphMany
     {
         return $this->morphMany(Comment::class, 'commentmorph');
     }
 
-    public function rates()
+    public function rates(): MorphMany
     {
         return $this->morphMany(Rate::class, 'ratemorph');
-    }
-
-    public function files():MorphMany
-    {
-        return $this->morphMany(File::class, 'filemorph');
     }
 
     public function brand(): BelongsTo
@@ -66,10 +69,41 @@ class Product extends Model
         return $this->hasMany(Variant::class);
     }
 
+    public function getAverageRateAttribute()
+    {
+        return $this->rates()->selectRaw('AVG(CAST(value AS FLOAT)) as average_rate')->pluck('average_rate')->first();
+    }
+
+    public function getOriginalPriceAttribute()
+    {
+        return $this->variants()->first()->original_price ?? null;
+    }
+
+    public function getPriceAttribute()
+    {
+        return $this->variants()->first()->price ?? null;
+    }
+
     public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [])
     {
-        // Eager load relationships to avoid N+1 query problem
-        $query->with(['tags', 'category', 'comments', 'variants', 'collectionProducts']);
+        $query->with(['tags', 'category', 'collections']);
+
+        if (!empty($tags)) {
+            $query->whereHas('tags', function ($query) use ($tags) {
+                $query->whereIn('tags.id', $tags)
+                    ->where('tagmorph_type', self::class);
+            });
+        }
+
+        if (!is_null($status)) {
+            $query->where('status', $status);
+        }
+
+        if (!empty($collectionIds)) {
+            $query->whereHas('collections', function ($query) use ($collectionIds) {
+                $query->whereIn('collection_id', $collectionIds);
+            });
+        }
 
         if ($search === '') {
             return $query;
@@ -86,39 +120,14 @@ class Product extends Model
                 });
             }
         });
-
-        if (!empty($tags)) {
-            $query->whereHas('tags', function ($query) use ($tags) {
-                $query->whereIn('tags.id', $tags)
-                    ->where('tagmorph_type', self::class); // Ensure correct polymorphic type
-            });
-        }
-
-        if (!is_null($status)) {
-            $query->where('status', $status);
-        }
-
-        if (!empty($collectionIds)) {
-            $query->whereHas('collectionProducts', function ($query) use ($collectionIds) {
-                $query->whereIn('collection_id', $collectionIds);
-            });
-        }
-
-        $query->withAverageRate();
-
+        
         return $query;
     }
 
-    public function scopeWithAverageRate($query)
+    public function scopeSingleProduct($query, $id)
     {
-        $query->select('products.*')
-            ->selectRaw('COALESCE(AVG(rates.value), 0) as average_rate')
-            ->leftJoin('rates', function ($join) {
-                $join->on('products.id', '=', 'rates.ratemorph_id')
-                    ->where('rates.ratemorph_type', self::class);
-            })
-            ->groupBy('products.id');
-
-        return $query;
+        return $query->with([
+            'tags',
+        ])->where('id', $id);
     }
 }

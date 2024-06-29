@@ -28,6 +28,21 @@ class CreateProductFormRequest extends FormRequest
             'category_id' => 'required|integer|exists:categories,id',
             'status' => 'required',
             'note' => 'nullable|string',
+            'variants' => 'required|array|min:1', // Validation rule for variants array
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array
+     */
+    public function messages(): array
+    {
+        return [
+            'variants.required' => 'The product must have at least one variant.',
+            'variants.array' => 'The variants field must be an array.',
+            'variants.min' => 'The product must have at least one variant.',
         ];
     }
 }
