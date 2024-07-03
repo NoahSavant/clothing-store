@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Constants\UserConstants\UserRole;
 use App\Traits\BaseModel;
+use Auth;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +29,7 @@ class Product extends Model
         'note',
     ];
 
-    protected $appends = ['average_rate', 'original_price', 'price'];
+    protected $appends = ['average_rate', 'original_price', 'price', 'stock_limit'];
 
     public function collectionProducts(): HasMany
     {
@@ -36,7 +38,7 @@ class Product extends Model
 
     public function collections(): BelongsToMany
     {
-        return $this->belongsToMany(Collection::class, 'collection_products');
+        return $this->belongsToMany(Collection::class, 'collection_products')->whereNull('collection_products.deleted_at');
     }
 
     public function comments(): MorphMany
@@ -61,7 +63,7 @@ class Product extends Model
 
     public function tags()
     {
-        return $this->morphToMany(Tag::class, 'tagmorph', 'used_tags');
+        return $this->morphToMany(Tag::class, 'tagmorph', 'used_tags')->whereNull('used_tags.deleted_at');
     }
 
     public function variants(): HasMany
@@ -84,7 +86,12 @@ class Product extends Model
         return $this->variants()->first()->price ?? null;
     }
 
-    public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [])
+    public function getStockLimitAttribute()
+    {
+        return $this->variants()->first()->stock_limit ?? false;
+    }
+
+    public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [], $minPrice = null, $maxPrice = null)
     {
         $query->with(['tags', 'category', 'collections']);
 
@@ -105,6 +112,19 @@ class Product extends Model
             });
         }
 
+        if (!is_null($minPrice) || !is_null($maxPrice)) {
+            $query->whereHas('variants', function ($query) use ($minPrice, $maxPrice) {
+                if (!is_null($minPrice)) {
+                    $query->where('price', '>=', $minPrice);
+                }
+                if (!is_null($maxPrice)) {
+                    $query->where('price', '<=', $maxPrice);
+                }
+            });
+        }
+
+        $query->withMark();
+
         if ($search === '') {
             return $query;
         }
@@ -120,14 +140,34 @@ class Product extends Model
                 });
             }
         });
-        
+
         return $query;
     }
 
+
     public function scopeSingleProduct($query, $id)
     {
+        $query->withMark();
         return $query->with([
             'tags',
         ])->where('id', $id);
+    }
+
+    public function scopeWithMark($query)
+    {
+        if (!(Auth::check() && Auth::user()->role === UserRole::CUSTOMER)) {
+           return $query;
+        }
+
+        $userId = Auth::user()->id;
+        return $query->addSelect([
+            'is_marked' => function ($query) use ($userId) {
+                $query->selectRaw('CASE WHEN EXISTS (
+                    SELECT 1 FROM marks
+                    WHERE marks.product_id = products.id
+                    AND marks.user_id = ?
+                ) THEN 1 ELSE 0 END', [$userId]);
+            }
+        ]);
     }
 }

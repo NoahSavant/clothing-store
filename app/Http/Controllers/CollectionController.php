@@ -54,7 +54,7 @@ class CollectionController extends Controller
 
     public function updateProducts(Request $request, $id) {
         $result = $this->collectionService->updateProducts($id, $request);
-        return $result;
+
         if (isset($result['errorMessage'])) {
             return response()->json([
                 'errorMessage' => $result['errorMessage'],

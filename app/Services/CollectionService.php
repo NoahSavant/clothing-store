@@ -120,10 +120,8 @@ class CollectionService extends BaseService
         } elseif ($type === 'remove') {
             
             $removeProductIds = array_intersect($productIds, $currentProductIds);
-            return $collection->products;
-                
+            
             if (!empty($removeProductIds)) {
-                // Use a transaction for data consistency
                 DB::beginTransaction();
                 try {
                     CollectionProduct::where('collection_id', $id)
@@ -131,8 +129,8 @@ class CollectionService extends BaseService
                         ->delete();
 
                     DB::commit();
+                    return true;
                 } catch (\Exception $e) {
-                    // Rollback transaction on error
                     DB::rollback();
                     return [
                         'errorMessage' => 'Failed to remove products from collection'

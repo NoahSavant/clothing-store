@@ -11,20 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('variants', function (Blueprint $table) {
+        Schema::create('marks', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('product_id')->nullable();
-            $table->string('size')->nullable();
-            $table->string('color')->nullable();
-            $table->integer('status')->nullable();
-            $table->unsignedBigInteger('original_price')->nullable();
-            $table->unsignedBigInteger('price')->nullable();
-            $table->integer('stock')->nullable();
-            $table->integer('stock_limit')->nullable();
-            $table->string('image_url')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
+            $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('product_id')->references('id')->on('products');
         });
     }
@@ -34,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('variants');
+        Schema::dropIfExists('marks');
     }
 };

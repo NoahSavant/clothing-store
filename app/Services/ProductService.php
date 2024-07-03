@@ -25,9 +25,12 @@ class ProductService extends BaseService
         $search = $input['search'] ?? '';
         $tags = $input['tags'] ?? [];
         $status = $input['status'] ?? null;
-        $collections = $input['collections'] ??  [];
+        $collections = $input['collections'] ?? [];
         $collections = array_map('intval', $collections);
-        $query = $this->model->search($search, $tags, $status, $collections);
+        $minPrice = $input['min_price'] ?? null;
+        $maxPrice = $input['max_price'] ?? null;
+
+        $query = $this->model->search($search, $tags, $status, $collections, $minPrice, $maxPrice);
         $data = $this->getAll($input, $query);
         return $data;
     }

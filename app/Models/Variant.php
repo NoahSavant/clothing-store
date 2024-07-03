@@ -21,7 +21,8 @@ class Variant extends Model
         'original_price',
         'price',
         'stock',
-        'image_url'
+        'image_url',
+        'stock_limit'
     ];
 
     public function cartItems(): HasMany
