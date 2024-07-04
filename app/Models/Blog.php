@@ -2,21 +2,28 @@
 
 namespace App\Models;
 
+use App\Constants\UserConstants\UserRole;
+use App\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Blog extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BaseModel;
 
     protected $fillable = [
+        'name',
         'user_id',
         'content',
         'status',
         'image_url',
+        'short_description',
     ];
+
+    protected $appends = ['average_rate'];
 
     public function user(): BelongsTo
     {
@@ -35,6 +42,54 @@ class Blog extends Model
 
     public function tags()
     {
-        return $this->morphMany(Tag::class, 'tagmorph');
+        return $this->morphMany(Tag::class, 'tagmorph')->whereNull('used_tags.deleted_at');
+    }
+
+    public function getAverageRateAttribute()
+    {
+        return $this->rates()->selectRaw('AVG(CAST(value AS FLOAT)) as average_rate')->pluck('average_rate')->first();
+    }
+
+    public function scopeSearch($query, $search, $tags = [], $status = null)
+    {
+        $query->with(['tags']);
+
+        if (!empty($tags)) {
+            $query->whereHas('tags', function ($query) use ($tags) {
+                $query->whereIn('tags.id', $tags)
+                    ->where('tagmorph_type', self::class);
+            });
+        }
+
+        if (!is_null($status)) {
+            $query->where('status', $status);
+        }
+
+        if ($search === '') {
+            return $query;
+        }
+
+        $keywords = explode(',', $search);
+
+        $query->where(function ($query) use ($keywords) {
+            foreach ($keywords as $keyword) {
+                $keywordWithoutAccent = $this->removeAccents(mb_strtolower(trim($keyword)));
+                $query->orWhere(function ($query) use ($keywordWithoutAccent) {
+                    $query->whereRaw('LOWER(UNACCENT(name)) LIKE ?', ["%$keywordWithoutAccent%"])
+                        ->orWhereRaw('unaccent(LOWER(content)) LIKE ?', ["%$keywordWithoutAccent%"])
+                        ->orWhereRaw('unaccent(LOWER(short_description)) LIKE ?', ["%$keywordWithoutAccent%"]);
+                });
+            }
+        });
+
+        return $query;
+    }
+
+    public function scopeSingleBlog($query, $id)
+    {
+        $query->withMark();
+        return $query->with([
+            'tags',
+        ])->where('id', $id);
     }
 }

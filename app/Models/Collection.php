@@ -24,7 +24,7 @@ class Collection extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'collection_products');
+        return $this->belongsToMany(Product::class, 'collection_products')->whereNull('collection_products.deleted_at');
     }
 
 

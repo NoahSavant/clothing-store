@@ -4,6 +4,7 @@ use App\Constants\UserConstants\UserRole;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthenController;
 use App\Http\Controllers\BlockController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\FileController;
@@ -57,6 +58,11 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
     Route::get('/{id}', 'get')->name('getSingleProduct');
 });
 
+Route::controller(BlogController::class)->prefix('blogs')->group(function () {
+    Route::get('/', 'index')->name('getAllBlogs');
+    Route::get('/{id}', 'get')->name('getSingleBlog');
+});
+
 Route::controller(VariantController::class)->prefix('variants')->group(function () {
     Route::get('/{id}', 'index')->name('getAllVariants');
 });
@@ -91,7 +97,6 @@ Route::controller(CollectionController::class)->prefix('collections')->group(fun
     Route::delete('/', 'delete')->name('deleteCollection');
     Route::get('/{id}', 'get')->name('getCollection');
     Route::post('/{id}/update-product', 'updateProducts')->name('updateProduct');
-
 });
 
 Route::controller(DiscountController::class)->prefix('discounts')->group(function () {
@@ -104,6 +109,12 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
     Route::post('/', 'create')->name('createProducts');
     Route::put('/{id}', 'update')->name('updateProducts');
     Route::delete('/', 'delete')->name('deleteProducts');
+});
+
+Route::controller(BlogController::class)->prefix('blogs')->group(function () {
+    Route::post('/', 'create')->name('createBlogs');
+    Route::put('/{id}', 'update')->name('updateBlogs');
+    Route::delete('/', 'delete')->name('deleteBlogs');
 });
 
 Route::controller(VariantController::class)->prefix('variants')->group(function () {

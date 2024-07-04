@@ -29,8 +29,9 @@ class ProductService extends BaseService
         $collections = array_map('intval', $collections);
         $minPrice = $input['min_price'] ?? null;
         $maxPrice = $input['max_price'] ?? null;
+        $excludeCollectionId = $input['excludeCollectionId'] ?? null;
 
-        $query = $this->model->search($search, $tags, $status, $collections, $minPrice, $maxPrice);
+        $query = $this->model->search($search, $tags, $status, $collections, $minPrice, $maxPrice, $excludeCollectionId);
         $data = $this->getAll($input, $query);
         return $data;
     }
@@ -77,7 +78,6 @@ class ProductService extends BaseService
             'name' => $data['name'],
             'description' => $data['description'],
             'short_description' => $data['short_description'],
-            'brand_id' => $data['brand_id'],
             'category_id' => $data['category_id'],
             'status' => $data['status'],
             'first_image_url' => $first_image_url,
@@ -136,7 +136,6 @@ class ProductService extends BaseService
             'name' => $data['name'],
             'description' => $data['description'],
             'short_description' => $data['short_description'],
-            'brand_id' => $data['brand_id'],
             'category_id' => $data['category_id'],
             'status' => $data['status'],
             'note' => $data['note'],

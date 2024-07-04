@@ -91,7 +91,7 @@ class Product extends Model
         return $this->variants()->first()->stock_limit ?? false;
     }
 
-    public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [], $minPrice = null, $maxPrice = null)
+    public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [], $minPrice = null, $maxPrice = null, $excludeCollectionId = null)
     {
         $query->with(['tags', 'category', 'collections']);
 
@@ -109,6 +109,12 @@ class Product extends Model
         if (!empty($collectionIds)) {
             $query->whereHas('collections', function ($query) use ($collectionIds) {
                 $query->whereIn('collection_id', $collectionIds);
+            });
+        }
+
+        if (!is_null($excludeCollectionId)) {
+            $query->whereDoesntHave('collections', function ($query) use ($excludeCollectionId) {
+                $query->where('collection_id', $excludeCollectionId);
             });
         }
 
@@ -136,7 +142,8 @@ class Product extends Model
                 $keywordWithoutAccent = $this->removeAccents(mb_strtolower(trim($keyword)));
                 $query->orWhere(function ($query) use ($keywordWithoutAccent) {
                     $query->whereRaw('LOWER(UNACCENT(name)) LIKE ?', ["%$keywordWithoutAccent%"])
-                        ->orWhereRaw('unaccent(LOWER(note)) LIKE ?', ["%$keywordWithoutAccent%"]);
+                        ->orWhereRaw('unaccent(LOWER(note)) LIKE ?', ["%$keywordWithoutAccent%"])
+                        ->orWhereRaw('unaccent(LOWER(short_description)) LIKE ?', ["%$keywordWithoutAccent%"]);
                 });
             }
         });
@@ -144,12 +151,12 @@ class Product extends Model
         return $query;
     }
 
-
     public function scopeSingleProduct($query, $id)
     {
         $query->withMark();
         return $query->with([
             'tags',
+            'category'
         ])->where('id', $id);
     }
 

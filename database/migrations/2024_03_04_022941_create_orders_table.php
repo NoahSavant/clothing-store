@@ -21,6 +21,8 @@ return new class extends Migration
             $table->integer('payment_method')->nullable();
             $table->integer('status')->nullable();
             $table->string('phonenumber')->nullable();
+            $table->string('address')->nullable();
+            $table->string('address_link')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

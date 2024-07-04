@@ -145,7 +145,11 @@ class CollectionService extends BaseService
 
     public function getSingle($id, $request)
     {
-        $collection = $this->model->whereId($id)->first();
+        if (is_numeric($id)) {
+            $collection = $this->model->whereId($id)->first();
+        } else {
+            $collection = $this->model->where('name', $id)->first();
+        }
 
         return $collection;
     }

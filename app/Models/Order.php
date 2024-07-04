@@ -19,8 +19,10 @@ class Order extends Model
         'payment_method',
         'status',
         'staff_id',
-        'started_at',
-        'phonenumber'
+        'ended_at',
+        'phonenumber',
+        'address',
+        'address_link'
     ];
 
     public function user(): BelongsTo

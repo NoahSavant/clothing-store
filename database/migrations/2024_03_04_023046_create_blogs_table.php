@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('blogs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('name')->nullable();
             $table->text('content')->nullable();
             $table->integer('status')->nullable();
+            $table->text('short_description')->nullable();
             $table->string('image_url')->nullable();
             $table->timestamps();
             $table->softDeletes();
