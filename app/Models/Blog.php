@@ -53,6 +53,7 @@ class Blog extends Model
     public function scopeSearch($query, $search, $tags = [], $status = null)
     {
         $query->with(['tags']);
+        $query->withMark();
 
         if (!empty($tags)) {
             $query->whereHas('tags', function ($query) use ($tags) {
@@ -91,5 +92,26 @@ class Blog extends Model
         return $query->with([
             'tags',
         ])->where('id', $id);
+    }
+
+    public function scopeWithMark($query)
+    {
+        if (!(Auth::check() && Auth::user()->role === UserRole::CUSTOMER)) {
+            return $query;
+        }
+
+        $userId = Auth::user()->id;
+        $morphType = self::class;
+
+        return $query->addSelect([
+            'is_marked' => function ($query) use ($userId, $morphType) {
+                $query->selectRaw('CASE WHEN EXISTS (
+                SELECT 1 FROM marks
+                WHERE marks.markmorph_id = blogs.id
+                AND marks.markmorph_type = ?
+                AND marks.user_id = ?
+            ) THEN 1 ELSE 0 END', [$morphType, $userId]);
+            }
+        ]);
     }
 }

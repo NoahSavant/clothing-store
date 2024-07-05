@@ -12,7 +12,7 @@ class FileCategory
 
     const COMMENT = 3;
 
-    const EVENT = 4;
+    const USER = 4;
 
     const CATEGORY = 5;
 

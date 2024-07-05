@@ -71,6 +71,11 @@ class Product extends Model
         return $this->hasMany(Variant::class);
     }
 
+    public function marks(): MorphMany
+    {
+        return $this->morphMany(Mark::class, 'markmorph');
+    }
+
     public function getAverageRateAttribute()
     {
         return $this->rates()->selectRaw('AVG(CAST(value AS FLOAT)) as average_rate')->pluck('average_rate')->first();
@@ -163,17 +168,20 @@ class Product extends Model
     public function scopeWithMark($query)
     {
         if (!(Auth::check() && Auth::user()->role === UserRole::CUSTOMER)) {
-           return $query;
+            return $query;
         }
 
         $userId = Auth::user()->id;
+        $morphType = self::class;
+
         return $query->addSelect([
-            'is_marked' => function ($query) use ($userId) {
+            'is_marked' => function ($query) use ($userId, $morphType) {
                 $query->selectRaw('CASE WHEN EXISTS (
-                    SELECT 1 FROM marks
-                    WHERE marks.product_id = products.id
-                    AND marks.user_id = ?
-                ) THEN 1 ELSE 0 END', [$userId]);
+                SELECT 1 FROM marks
+                WHERE marks.markmorph_id = products.id
+                AND marks.markmorph_type = ?
+                AND marks.user_id = ?
+            ) THEN 1 ELSE 0 END', [$morphType, $userId]);
             }
         ]);
     }

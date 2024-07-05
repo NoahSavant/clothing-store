@@ -11,6 +11,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariableController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\VariantController;
@@ -61,6 +62,11 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
 Route::controller(BlogController::class)->prefix('blogs')->group(function () {
     Route::get('/', 'index')->name('getAllBlogs');
     Route::get('/{id}', 'get')->name('getSingleBlog');
+});
+
+Route::controller(UserController::class)->prefix('users')->group(function () {
+    Route::get('/', 'index')->name('getAllUsers');
+    Route::get('/{id}', 'get')->name('getSingleUser');
 });
 
 Route::controller(VariantController::class)->prefix('variants')->group(function () {
@@ -115,6 +121,12 @@ Route::controller(BlogController::class)->prefix('blogs')->group(function () {
     Route::post('/', 'create')->name('createBlogs');
     Route::put('/{id}', 'update')->name('updateBlogs');
     Route::delete('/', 'delete')->name('deleteBlogs');
+});
+
+Route::controller(UserController::class)->prefix('users')->group(function () {
+    Route::post('/', 'create')->name('createUsers');
+    Route::put('/{id}', 'update')->name('updateUsers');
+    Route::delete('/', 'delete')->name('deleteUsers');
 });
 
 Route::controller(VariantController::class)->prefix('variants')->group(function () {

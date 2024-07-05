@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -110,5 +111,45 @@ class User extends Authenticatable implements JWTSubject
     public function userDiscounts(): HasMany
     {
         return $this->hasMany(UserDiscount::class);
+    }
+
+    public function discounts(): BelongsToMany
+    {
+        return $this->belongsToMany(Discount::class, 'user_discounts')->whereNull('user_discounts.deleted_at');
+    }
+
+    public function scopeSearch($query, $search, $role = null, $status = null)
+    {
+        if (!is_null($role)) {
+            $query->where('role', $role);
+        }
+
+        if (!is_null($status)) {
+            $query->where('status', $status);
+        }
+
+        if ($search === '') {
+            return $query;
+        }
+
+        $keywords = explode(',', $search);
+
+        $query->where(function ($query) use ($keywords) {
+            foreach ($keywords as $keyword) {
+                $keywordWithoutAccent = $this->removeAccents(mb_strtolower(trim($keyword)));
+                $query->orWhere(function ($query) use ($keywordWithoutAccent) {
+                    $query->whereRaw('LOWER(UNACCENT(username)) LIKE ?', ["%$keywordWithoutAccent%"])
+                        ->orWhereRaw('unaccent(LOWER(email)) LIKE ?', ["%$keywordWithoutAccent%"])
+                        ->orWhereRaw('unaccent(LOWER(phonenumber)) LIKE ?', ["%$keywordWithoutAccent%"]);
+                });
+            }
+        });
+
+        return $query;
+    }
+
+    public function scopeSingleUser($query, $id)
+    {
+        return $query->where('id', $id);
     }
 }
