@@ -51,7 +51,7 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
 });
 
 Route::controller(CollectionController::class)->prefix('collections')->group(function () {
-    Route::get('/', 'index')->name('getAllCategories');
+    Route::get('/', 'index')->name('getAllCollections');
 });
 
 Route::controller(ProductController::class)->prefix('products')->group(function () {
