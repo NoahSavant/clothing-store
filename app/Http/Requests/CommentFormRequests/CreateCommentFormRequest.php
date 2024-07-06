@@ -22,8 +22,8 @@ class CreateCommentFormRequest extends FormRequest
     public function rules()
     {
         return [
-            'commentmorph_id' => 'required_if:commentmorph_type|required_without:commentmorph_type|integer',
-            'commentmorph_type' => 'required_if:commentmorph_id|required_without:commentmorph_id|integer',
+            'commentmorph_id' => 'required_without:commentmorph_type|integer',
+            'commentmorph_type' => 'required_without:commentmorph_id|integer',
             'content' => 'required|string',
             'rate' => $this->input('commentmorph_type') != 2 ? 'required|integer' : '',
         ];
@@ -32,9 +32,10 @@ class CreateCommentFormRequest extends FormRequest
     public function messages()
     {
         return [
-            'commentmorph_id.required_if' => 'Đối tượng không xác định.',
-            'commentmorph_type.required_if' => 'Đối tượng không xác định.',
+            'commentmorph_id.required_without' => 'Đối tượng không xác định.',
+            'commentmorph_type.required_without' => 'Đối tượng không xác định.',
             'rate.required' => 'Bạn chưa đánh giá.',
         ];
     }
 }
+

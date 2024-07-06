@@ -37,7 +37,7 @@ class Comment extends Model
         return $this->morphMany(File::class, 'filemorph');
     }
 
-    public function scopeSearch($query, $search, $commentmorph_id, $commentmorph_type, $hide=false)
+    public function scopeSearch($query, $search, $commentmorph_id, $commentmorph_type, $hide = false)
     {
         $query->with(['user']);
 
@@ -49,17 +49,17 @@ class Comment extends Model
         if ($commentmorph_type != CommentParent::COMMENT) {
             $query->addSelect([
                 'rate' => function ($query) {
-                    $query->selectRaw('IFNULL((
-                SELECT value FROM rates
-                WHERE rates.ratemorph_id = commentmorph_id
-                AND rates.ratemorph_type = commentmorph_type
-                AND rates.user_id = comments.user_id
-            ), NULL)');
+                    $query->selectRaw('COALESCE((
+                    SELECT value FROM rates
+                    WHERE rates.ratemorph_id = comments.commentmorph_id
+                    AND rates.ratemorph_type = comments.commentmorph_type
+                    AND rates.user_id = comments.user_id
+                ), NULL)');
                 }
             ]);
         }
 
-        if(!$hide) {
+        if (!$hide) {
             $query->where('hide', $hide);
         }
 
@@ -85,56 +85,19 @@ class Comment extends Model
     {
         $query->with(['user']);
 
-        $query->where('user_id', $user_id)->where('commentmorph_id', $commentmorph_id)
+        $query->where('user_id', $user_id)
+            ->where('commentmorph_id', $commentmorph_id)
             ->where('commentmorph_type', CommentParent::getCommentParent($commentmorph_type));
 
         if ($commentmorph_type != CommentParent::COMMENT) {
             $query->addSelect([
                 'rate' => function ($query) {
-                    $query->selectRaw('IFNULL((
-                SELECT value FROM rates
-                WHERE rates.ratemorph_id = commentmorph_id
-                AND rates.ratemorph_type = commentmorph_type
-                AND rates.user_id = comments.user_id
-            ), NULL)');
-                }
-            ]);
-        }
-
-        if ($search === '') {
-            return $query;
-        }
-
-        $keywords = explode(',', $search);
-
-        $query->where(function ($query) use ($keywords) {
-                foreach ($keywords as $keyword) {
-                    $keywordWithoutAccent = $this->removeAccents(mb_strtolower(trim($keyword)));
-                    $query->orWhere(function ($query) use ($keywordWithoutAccent) {
-                        $query->whereRaw('LOWER(UNACCENT(content)) LIKE ?', ["%$keywordWithoutAccent%"]);
-                    });
-                }
-            });
-
-        return $query;
-    }
-
-    public function scopeSearchWithOutUser($query, $search, $commentmorph_id, $commentmorph_type, $user_id)
-    {
-        $query->with(['user']);
-
-        $query->whereNot('user_id', $user_id)->where('commentmorph_id', $commentmorph_id)
-            ->where('commentmorph_type', CommentParent::getCommentParent($commentmorph_type));
-
-        if ($commentmorph_type != CommentParent::COMMENT) {
-            $query->addSelect([
-                'rate' => function ($query) {
-                    $query->selectRaw('IFNULL((
-                SELECT value FROM rates
-                WHERE rates.ratemorph_id = commentmorph_id
-                AND rates.ratemorph_type = commentmorph_type
-                AND rates.user_id = comments.user_id
-            ), NULL)');
+                    $query->selectRaw('COALESCE((
+                    SELECT value FROM rates
+                    WHERE rates.ratemorph_id = comments.commentmorph_id
+                    AND rates.ratemorph_type = comments.commentmorph_type
+                    AND rates.user_id = comments.user_id
+                ), NULL)');
                 }
             ]);
         }
@@ -156,4 +119,44 @@ class Comment extends Model
 
         return $query;
     }
+
+    public function scopeSearchWithOutUser($query, $search, $commentmorph_id, $commentmorph_type, $user_id)
+    {
+        $query->with(['user']);
+
+        $query->where('user_id', '!=', $user_id)
+            ->where('commentmorph_id', $commentmorph_id)
+            ->where('commentmorph_type', CommentParent::getCommentParent($commentmorph_type));
+
+        if ($commentmorph_type != CommentParent::COMMENT) {
+            $query->addSelect([
+                'rate' => function ($query) {
+                    $query->selectRaw('COALESCE((
+                    SELECT value FROM rates
+                    WHERE rates.ratemorph_id = comments.commentmorph_id
+                    AND rates.ratemorph_type = comments.commentmorph_type
+                    AND rates.user_id = comments.user_id
+                ), NULL)');
+                }
+            ]);
+        }
+
+        if ($search === '') {
+            return $query;
+        }
+
+        $keywords = explode(',', $search);
+
+        $query->where(function ($query) use ($keywords) {
+            foreach ($keywords as $keyword) {
+                $keywordWithoutAccent = $this->removeAccents(mb_strtolower(trim($keyword)));
+                $query->orWhere(function ($query) use ($keywordWithoutAccent) {
+                    $query->whereRaw('LOWER(UNACCENT(content)) LIKE ?', ["%$keywordWithoutAccent%"]);
+                });
+            }
+        });
+
+        return $query;
+    }
+
 }
