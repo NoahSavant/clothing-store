@@ -98,7 +98,7 @@ class Product extends Model
 
     public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [], $minPrice = null, $maxPrice = null, $excludeCollectionId = null)
     {
-        $query->with(['tags', 'category', 'collections']);
+        $query->with(['tags', 'category', 'collections', 'variants']);
 
         if (!empty($tags)) {
             $query->whereHas('tags', function ($query) use ($tags) {

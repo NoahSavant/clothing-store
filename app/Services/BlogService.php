@@ -88,7 +88,7 @@ class BlogService extends BaseService
 
         return [
             'successMessage' => 'Create blog successfully',
-            'data' => $result
+            'data' => $blog
         ];
     }
 
