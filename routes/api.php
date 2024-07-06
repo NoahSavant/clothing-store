@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthenController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CollectionController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
@@ -62,6 +63,11 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
 Route::controller(BlogController::class)->prefix('blogs')->group(function () {
     Route::get('/', 'index')->name('getAllBlogs');
     Route::get('/{id}', 'get')->name('getSingleBlog');
+});
+
+Route::controller(CommentController::class)->prefix('comments')->group(function () {
+    Route::get('/', 'index')->name('getAllComments');
+    Route::get('/{id}', 'get')->name('getSingleComment');
 });
 
 Route::controller(UserController::class)->prefix('users')->group(function () {
@@ -121,6 +127,12 @@ Route::controller(BlogController::class)->prefix('blogs')->group(function () {
     Route::post('/', 'create')->name('createBlogs');
     Route::put('/{id}', 'update')->name('updateBlogs');
     Route::delete('/', 'delete')->name('deleteBlogs');
+});
+
+Route::controller(CommentController::class)->prefix('comments')->group(function () {
+    Route::post('/', 'create')->name('createComments');
+    Route::put('/{id}', 'update')->name('updateComments');
+    Route::delete('/', 'delete')->name('deleteComments');
 });
 
 Route::controller(UserController::class)->prefix('users')->group(function () {

@@ -108,10 +108,19 @@ class CommentService extends BaseService
 
         $updateData = [
             'content' => $data['content'],
-            'hide' => false
         ];
 
+        if(isset($data['hide'])) {
+            $updateData['hide'] = $data['hide'];
+        }
 
+        if (isset($data['rate'])) {
+            Rate::where('user_id', $comment->user_id)
+            ->where('ratemorph_id', $comment->commentmorph_id)
+            ->where('ratemorph_type', $comment->commentmorph_type)->update([
+                'value' => $data['rate']
+            ]);
+        }
 
         $comment = parent::update([$id], $updateData);
 
@@ -119,33 +128,6 @@ class CommentService extends BaseService
             return [
                 'errorMessage' => 'Update comment fail',
             ];
-        }
-
-        if ($data->has('tags')) {
-            $currentTags = $this->getFirst($id)->tags->pluck('id')->toArray();
-
-            $newTags = $data['tags'] == 'null' ? [] : $data['tags'];
-
-            $tagsToDelete = array_diff($currentTags, $newTags);
-
-            $tagsToAdd = array_diff($newTags, $currentTags);
-
-            if (!empty($tagsToDelete)) {
-                UsedTag::where('tagmorph_id', $id)
-                    ->where('tagmorph_type', Comment::class)
-                    ->whereIn('tag_id', $tagsToDelete)
-                    ->delete();
-            }
-
-            if (!empty($tagsToAdd)) {
-                foreach ($tagsToAdd as $tagId) {
-                    UsedTag::create([
-                        'tag_id' => $tagId,
-                        'tagmorph_id' => $id,
-                        'tagmorph_type' => Comment::class,
-                    ]);
-                }
-            }
         }
 
         return true;

@@ -22,7 +22,6 @@ class CreateCommentFormRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => 'required|integer',
             'commentmorph_id' => 'required_if:commentmorph_type|required_without:commentmorph_type|integer',
             'commentmorph_type' => 'required_if:commentmorph_id|required_without:commentmorph_id|integer',
             'content' => 'required|string',
