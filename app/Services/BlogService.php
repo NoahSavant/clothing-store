@@ -32,7 +32,11 @@ class BlogService extends BaseService
 
     public function getSingle($id, $request)
     {
-        $blog = $this->model->singleBlog($id)->first();
+        $related = $request['related'] ?? false;
+        if($related) {
+            return $this->model->singleBlog($id, $related)->get();
+        }
+        $blog = $this->model->singleBlog($id, $related)->first();
 
         return $blog;
     }
@@ -60,7 +64,6 @@ class BlogService extends BaseService
         $blog = parent::create([
             'name' => $data['name'],
             'short_description' => $data['short_description'],
-            'category_id' => $data['category_id'],
             'status' => $data['status'],
             'image_url' => $image_url,
             'content' => $data['content'],
@@ -99,7 +102,6 @@ class BlogService extends BaseService
         $updateData = [
             'name' => $data['name'],
             'short_description' => $data['short_description'],
-            'category_id' => $data['category_id'],
             'status' => $data['status'],
             'content' => $data['content'],
         ];

@@ -42,7 +42,7 @@ class Blog extends Model
 
     public function tags()
     {
-        return $this->morphMany(Tag::class, 'tagmorph')->whereNull('used_tags.deleted_at');
+        return $this->morphToMany(Tag::class, 'tagmorph', 'used_tags')->whereNull('used_tags.deleted_at');
     }
 
     public function getAverageRateAttribute()
@@ -52,7 +52,7 @@ class Blog extends Model
 
     public function scopeSearch($query, $search, $tags = [], $status = null)
     {
-        $query->with(['tags']);
+        $query->with(['tags', 'user']);
         $query->withMark();
 
         if (!empty($tags)) {
@@ -86,12 +86,26 @@ class Blog extends Model
         return $query;
     }
 
-    public function scopeSingleBlog($query, $id)
+    public function scopeSingleBlog($query, $id, $related = false)
     {
-        $query->withMark();
-        return $query->with([
-            'tags',
-        ])->where('id', $id);
+        $query->withMark()->with(['tags', 'user']);
+
+        if ($related) {
+            $blog = $this->findOrFail($id);
+            $userId = $blog->user_id;
+            $tagIds = $blog->tags->pluck('id')->toArray();
+
+            $query->where(function ($query) use ($userId, $tagIds) {
+                $query->where('user_id', $userId)
+                    ->orWhereHas('tags', function ($query) use ($tagIds) {
+                        $query->whereIn('tags.id', $tagIds);
+                    });
+            })->where('id', '!=', $id)->inRandomOrder()->limit(10);
+        } else {
+            $query->where('id', $id);
+        }
+
+        return $query;
     }
 
     public function scopeWithMark($query)

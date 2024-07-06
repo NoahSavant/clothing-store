@@ -156,14 +156,27 @@ class Product extends Model
         return $query;
     }
 
-    public function scopeSingleProduct($query, $id)
+    public function scopeSingleProduct($query, $id, $related = false)
     {
-        $query->withMark();
-        return $query->with([
-            'tags',
-            'category'
-        ])->where('id', $id);
+        $query->withMark()->with(['tags', 'category']);
+
+        if ($related) {
+            $product = $this->findOrFail($id);
+            $tagIds = $product->tags->pluck('id')->toArray();
+            $categoryId = $product->category_id;
+
+            $query->where(function ($query) use ($tagIds, $categoryId) {
+                $query->whereHas('tags', function ($query) use ($tagIds) {
+                    $query->whereIn('tags.id', $tagIds);
+                })->orWhere('category_id', $categoryId);
+            })->where('id', '!=', $id);
+        } else {
+            $query->where('id', $id);
+        }
+
+        return $query;
     }
+
 
     public function scopeWithMark($query)
     {

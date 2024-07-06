@@ -38,6 +38,10 @@ class ProductService extends BaseService
 
     public function getSingle($id, $request)
     {
+        $related = $request['related'] ?? false;
+        if ($related) {
+            return $this->model->singleBlog($id, $related)->get();
+        }
         $product = $this->model->singleProduct($id)->first();
 
         return $product;
