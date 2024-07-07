@@ -29,6 +29,12 @@ class VariantService extends BaseService
     }
 
     public function createVariant($productId, $data) {
+        if($this->isExisted($data)) {
+            return [
+                'errorMessage' => 'Kích thước và màu đã tồn tại',
+            ];
+        }
+
         $result = $this->create([
             'product_id' => $productId,
             'product_size_id' => $data['product_size_id'],
@@ -37,6 +43,7 @@ class VariantService extends BaseService
             'original_price' => $data['original_price'],
             'price' => $data['price'],
             'stock' => $data['stock'],
+            'stock_limit' => $data['stock_limit'],
         ]);
 
         return [
@@ -47,13 +54,20 @@ class VariantService extends BaseService
 
     public function update($id, $data)
     {
+        if ($this->isExisted($data, $id)) {
+            return [
+                'errorMessage' => 'kích thước và màu đã tồn tại',
+            ];
+        }
+
         $updateData = [
             'product_size_id' => $data['product_size_id'],
             'product_color_id' => $data['product_color_id'],
             'status' => $data['status'],
             'original_price' => $data['original_price'],
             'price' => $data['price'],
-            'stock' => $data['stock']
+            'stock' => $data['stock'],
+            'stock_limit' => $data['stock_limit'],
         ];
 
         $result = parent::update([$id], $updateData);
@@ -103,12 +117,11 @@ class VariantService extends BaseService
     }
 
 
-    public function isExisted($name, $id = null)
+    public function isExisted($data, $id = null)
     {
         if ($id) {
-
-            return $this->model->where('name', $name)->whereNot('id', $id)->exists();
+            return $this->model->where('product_color_id', $data['product_color_id'])->where('product_size_id', $data['product_size_id'])->whereNot('id', $id)->exists();
         }
-        return $this->model->where('name', $name)->exists();
+        return $this->model->where('product_color_id', $data['product_color_id'])->where('product_size_id', $data['product_size_id'])->exists();
     }
 }
