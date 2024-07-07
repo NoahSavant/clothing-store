@@ -58,6 +58,9 @@ Route::controller(CollectionController::class)->prefix('collections')->group(fun
 Route::controller(ProductController::class)->prefix('products')->group(function () {
     Route::get('/', 'index')->name('getAllProducts');
     Route::get('/{id}', 'get')->name('getSingleProduct');
+    Route::get('/{id}/product-colors', 'getColor')->name('getProductColors');
+    Route::get('/{id}/product-sizes', 'getSize')->name('getProductSizes');
+    
 });
 
 Route::controller(BlogController::class)->prefix('blogs')->group(function () {
@@ -119,8 +122,14 @@ Route::controller(DiscountController::class)->prefix('discounts')->group(functio
 
 Route::controller(ProductController::class)->prefix('products')->group(function () {
     Route::post('/', 'create')->name('createProducts');
+    Route::post('/{id}/product-colors', 'createColor')->name('createProductColor');
+    Route::post('/{id}/product-sizes', 'createSize')->name('createProductColor');
     Route::put('/{id}', 'update')->name('updateProducts');
     Route::delete('/', 'delete')->name('deleteProducts');
+    Route::put('/product-colors/{color_id}', 'updateColor')->name('updateProductColors');
+    Route::put('/product-sizes/{size_id}', 'updateSize')->name('updateProductSizes');
+    Route::delete('/product-colors', 'deleteColor')->name('deleteProductColors');
+    Route::delete('/product-sizes', 'deleteSize')->name('deleteProductSizes');
 });
 
 Route::controller(BlogController::class)->prefix('blogs')->group(function () {

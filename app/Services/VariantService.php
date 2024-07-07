@@ -22,34 +22,21 @@ class VariantService extends BaseService
     {
         $getAll = $input['all'] ?? false;
 
-        $query = $this->model->where('product_id', $productId);
+        $query = $this->model->where('product_id', $productId)->with(['product_color', 'product_size']);
         $data = $this->getAll($input, $query, $getAll);
 
         return $data;
     }
 
     public function createVariant($productId, $data) {
-        $image_url = "https://res.cloudinary.com/dvcdmxgyk/image/upload/v1718962708/files/mcouvshn7gcajzyudvqv.jpg";
-
-        if (isset($data['image'])) {
-            $result = $this->uploadFile($data['image'], 'variant_' . $data['size'] . '_' . $data['color'], FileCategory::VARIANT);
-
-            if (isset($result['errorMessage'])) {
-                return $result;
-            }
-
-            $image_url = $result['data']['url'];
-        }
-
         $result = $this->create([
             'product_id' => $productId,
-            'size' => $data['size'],
-            'color' => $data['color'],
+            'product_size_id' => $data['product_size_id'],
+            'product_color_id' => $data['product_color_id'],
             'status' => $data['status'],
             'original_price' => $data['original_price'],
             'price' => $data['price'],
             'stock' => $data['stock'],
-            'image_url' => $image_url
         ]);
 
         return [
@@ -61,23 +48,13 @@ class VariantService extends BaseService
     public function update($id, $data)
     {
         $updateData = [
-            'size' => $data['size'],
-            'color' => $data['color'],
+            'product_size_id' => $data['product_size_id'],
+            'product_color_id' => $data['product_color_id'],
             'status' => $data['status'],
             'original_price' => $data['original_price'],
             'price' => $data['price'],
             'stock' => $data['stock']
         ];
-
-        if (isset($data['image'])) {
-            $result = $this->uploadFile($data['image'], 'variant_' . $data['size'] . '_' . $data['color'], FileCategory::VARIANT);
-
-            if (isset($result['errorMessage'])) {
-                return $result;
-            }
-
-            $updateData['image_url'] = $result['data']['url'];
-        }
 
         $result = parent::update([$id], $updateData);
 

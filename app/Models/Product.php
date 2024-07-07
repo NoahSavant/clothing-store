@@ -93,13 +93,15 @@ class Product extends Model
 
     public function getStockLimitAttribute()
     {
-        return $this->variants()->first()->stock_limit ?? false;
+        return $this->variants()->first()->stock_limit ?? 0;
     }
 
     public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [], $minPrice = null, $maxPrice = null, $excludeCollectionId = null)
     {
-        $query->with(['tags', 'category', 'collections', 'variants']);
+        $query->with(['tags', 'category', 'collections']);
 
+        $query->whereHas('variants');
+        
         if (!empty($tags)) {
             $query->whereHas('tags', function ($query) use ($tags) {
                 $query->whereIn('tags.id', $tags)

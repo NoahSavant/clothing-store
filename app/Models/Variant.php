@@ -22,7 +22,9 @@ class Variant extends Model
         'price',
         'stock',
         'image_url',
-        'stock_limit'
+        'stock_limit',
+        'product_color_id',
+        'product_size_id',
     ];
 
     public function cartItems(): HasMany
@@ -38,5 +40,15 @@ class Variant extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function product_color(): BelongsTo
+    {
+        return $this->belongsTo(ProductColor::class);
+    }
+
+    public function product_size(): BelongsTo
+    {
+        return $this->belongsTo(ProductSize::class);
     }
 }

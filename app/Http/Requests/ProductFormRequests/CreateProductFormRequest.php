@@ -28,7 +28,6 @@ class CreateProductFormRequest extends FormRequest
             'category_id' => 'required|integer|exists:categories,id',
             'status' => 'required',
             'note' => 'nullable|string',
-            'variants' => 'required|array|min:1', // Validation rule for variants array
         ];
     }
 

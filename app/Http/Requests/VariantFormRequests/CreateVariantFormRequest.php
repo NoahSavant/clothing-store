@@ -22,12 +22,13 @@ class CreateVariantFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'size' => 'required|string|max:255',
-            'color' => 'nullable|string|max:255',
+            'product_size_id' => 'required',
+            'product_color_id' => 'required',
             'status' => 'required',
             'original_price' => 'required|numeric|min:0',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'stock_limit' => 'required',
         ];
     }
 
