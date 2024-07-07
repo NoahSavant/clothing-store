@@ -11,6 +11,7 @@ use App\Models\ProductColor;
 use App\Models\ProductSize;
 use App\Models\UsedTag;
 use App\Models\User;
+use App\Models\Variant;
 use Psy\Readline\Hoa\Console;
 
 class ProductService extends BaseService
@@ -56,6 +57,14 @@ class ProductService extends BaseService
 
     public function createColor($productId, $data)
     {
+        $productColor = ProductColor::where('product_id', $productId)->where('color', $data['color'])->first();
+
+        if($productColor) {
+            return [
+                'errorMessage' => 'Màu này đã tồn tại ở sản phẩm này',
+            ];
+        }
+
         $image_url = "https://res.cloudinary.com/dvcdmxgyk/image/upload/v1718962708/files/mcouvshn7gcajzyudvqv.jpg";
 
         if (isset($data['image'])) {
@@ -82,6 +91,22 @@ class ProductService extends BaseService
 
     public function updateColor($id, $data)
     {
+        $productColor = ProductColor::find($id);
+
+        if (!$productColor) {
+            return [
+                'errorMessage' => 'Không tìm thấy màu này'
+            ];
+        }
+
+        $otherProductColor = ProductColor::where('product_id', $productColor->product_id)->where('color', $data['color'])->where('id', '!=', $id)->first();
+
+        if ($otherProductColor) {
+            return [
+                'errorMessage' => 'Màu này đã tồn tại ở sản phẩm này',
+            ];
+        }
+
         $updateData = [
             'color' => $data['color'],
         ];
@@ -109,6 +134,14 @@ class ProductService extends BaseService
 
     public function deleteColor($ids)
     {
+        $deletedVariants = Variant::whereIn('product_color_id', $ids)->delete();
+
+        if(!$deletedVariants) {
+            return [
+                'errorMessage' => 'Delete color fail'
+            ];
+        }
+
         $result = ProductColor::destroy($ids);
 
         if (!$result) {
@@ -122,6 +155,14 @@ class ProductService extends BaseService
 
     public function deleteSize($ids)
     {
+        $deletedVariants = Variant::whereIn('product_size_id', $ids)->delete();
+
+        if (!$deletedVariants) {
+            return [
+                'errorMessage' => 'Delete size fail'
+            ];
+        }
+
         $result = ProductSize::destroy($ids);
 
         if (!$result) {
@@ -135,6 +176,14 @@ class ProductService extends BaseService
 
     public function createSize($productId, $data)
     {
+        $productSize = ProductSize::where('product_id', $productId)->where('size', $data['size'])->first();
+
+        if ($productSize) {
+            return [
+                'errorMessage' => 'Kích thước này đã tồn tại ở sản phẩm này',
+            ];
+        }
+
         $result = ProductSize::create([
             'product_id' => $productId,
             'size' => $data['size'],
@@ -148,6 +197,22 @@ class ProductService extends BaseService
 
     public function updateSize($id, $data)
     {
+        $productSize = ProductSize::find($id);
+
+        if (!$productSize) {
+            return [
+                'errorMessage' => 'Không tìm thấy kích thước'
+            ];
+        }
+
+        $otherProductSize = ProductSize::where('product_id', $productSize->product_id)->where('size', $data['size'])->where('id', '!=', $id)->first();
+
+        if ($otherProductSize) {
+            return [
+                'errorMessage' => 'Kích thước này đã tồn tại ở sản phẩm này',
+            ];
+        }
+
         $updateData = [
             'size' => $data['size'],
         ];

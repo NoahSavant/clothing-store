@@ -7,6 +7,7 @@ use App\Constants\UserConstants\UserRole;
 use App\Constants\UserConstants\UserStatus;
 use App\Constants\UserConstants\UserVerifyTime;
 use App\Http\Resources\UserInformation;
+use App\Models\User;
 use DateInterval;
 use DateTime;
 
@@ -64,7 +65,7 @@ class AuthenService extends BaseService
             ], StatusResponse::ERROR);
         }
 
-        $user = $this->userService->create(array_merge($input,
+        $user = User::create(array_merge($input,
             [
                 'password' => $this->hash($input['password']),
                 'role' => UserRole::CUSTOMER,
@@ -74,9 +75,15 @@ class AuthenService extends BaseService
 
         $this->setUpUser($user);
 
+        if($user) {
+            return $this->response([
+                'successMessage' => 'User successfully registered',
+            ], StatusResponse::SUCCESS);
+        }
+
         return $this->response([
-            'message' => $user ? 'User successfully registered' : 'User fail registered',
-        ], $user ? StatusResponse::SUCCESS : StatusResponse::ERROR);
+            'errorMessage' => 'User fail registered',
+        ], StatusResponse::ERROR);
     }
 
     public function activeAccount($input)
