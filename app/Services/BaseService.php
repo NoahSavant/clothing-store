@@ -90,6 +90,11 @@ class BaseService
         return Hash::make($data);
     }
 
+    public function checkHash($value, $hasValue)
+    {
+        return Hash::check($value, $hasValue);
+    }
+
     protected function encryptToken($data)
     {
         $key = Key::loadFromAsciiSafeString(EncryptionKey::REFRESH_KEY);

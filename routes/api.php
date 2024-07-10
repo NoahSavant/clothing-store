@@ -148,6 +148,7 @@ Route::controller(UserController::class)->prefix('users')->group(function () {
     Route::post('/', 'create')->name('createUsers');
     Route::put('/{id}', 'update')->name('updateUsers');
     Route::delete('/', 'delete')->name('deleteUsers');
+    Route::post('/change-password', 'changePassword')->name('changePassword');
 });
 
 Route::controller(VariantController::class)->prefix('variants')->group(function () {

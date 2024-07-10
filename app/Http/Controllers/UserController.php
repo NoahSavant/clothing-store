@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Constants\AuthenConstants\StatusResponse;
 use App\Http\Requests\DeleteFormRequest;
+use App\Http\Requests\UserFormRequests\ChangePasswordFormRequest;
 use App\Http\Requests\UserFormRequests\CreateUserFormRequest;
 use App\Http\Requests\UserFormRequests\UpdateUserFormRequest;
 use App\Services\CategoryService;
@@ -26,6 +27,19 @@ class UserController extends Controller
         $result = $this->userService->create($request);
 
         if(isset($result['errorMessage'])) {
+            return response()->json([
+                'errorMessage' => $result['errorMessage'],
+            ], StatusResponse::ERROR);
+        }
+
+        return response()->json($result, StatusResponse::SUCCESS);
+    }
+
+    public function changePassword(ChangePasswordFormRequest $request)
+    {
+        $result = $this->userService->changePassword($request);
+
+        if (isset($result['errorMessage'])) {
             return response()->json([
                 'errorMessage' => $result['errorMessage'],
             ], StatusResponse::ERROR);

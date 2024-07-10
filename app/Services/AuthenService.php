@@ -70,6 +70,7 @@ class AuthenService extends BaseService
                 'password' => $this->hash($input['password']),
                 'role' => UserRole::CUSTOMER,
                 'status' => UserStatus::DEACTIVE,
+                'image_url' => 'https://res.cloudinary.com/dvcdmxgyk/image/upload/v1720369002/files/9720009_zfy7sb.jpg'
             ]
         ));
 
