@@ -70,7 +70,8 @@ class UserController extends Controller
         }
 
         return response()->json([
-            'successMessage' => 'Update user successfully'
+            'successMessage' => 'Cập nhật thông tin tài khoản thành công',
+            'user' => $result['user']
         ], StatusResponse::SUCCESS);
     }
 

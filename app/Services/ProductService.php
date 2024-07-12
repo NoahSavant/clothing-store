@@ -6,9 +6,12 @@ use App\Constants\FileConstants\FileCategory;
 use App\Constants\UserConstants\UserStatus;
 use App\Http\Resources\AddressInformation;
 use App\Models\Address;
+use App\Models\CartItem;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\ProductSize;
+use App\Models\Tag;
 use App\Models\UsedTag;
 use App\Models\User;
 use App\Models\Variant;
@@ -33,8 +36,19 @@ class ProductService extends BaseService
         $minPrice = $input['min_price'] ?? null;
         $maxPrice = $input['max_price'] ?? null;
         $excludeCollectionId = $input['excludeCollectionId'] ?? null;
+        $withVariant = $input['withVariant'] ?? true;
+        $recommend = $input['recommend'] ?? false;
 
-        $query = $this->model->search($search, $tags, $status, $collections, $minPrice, $maxPrice, $excludeCollectionId);
+        if($recommend) {
+            $user = auth()->user();
+            if($user) {
+                return $this->model->recommendForUser($user->id);
+            } else {
+                return $this->model->recommendForGuest();
+            }
+        }
+
+        $query = $this->model->search($search, $tags, $status, $collections, $minPrice, $maxPrice, $excludeCollectionId, $withVariant);
         $data = $this->getAll($input, $query);
         return $data;
     }

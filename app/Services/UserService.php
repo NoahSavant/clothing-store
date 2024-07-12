@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Constants\FileConstants\FileCategory;
 use App\Constants\UserConstants\UserRole;
 use App\Constants\UserConstants\UserStatus;
+use App\Http\Resources\UserInformation;
 use App\Models\User;
 
 class UserService extends BaseService
@@ -116,13 +117,11 @@ class UserService extends BaseService
         }
 
         $updateData = [
-            'email' => $data['email'],
-            'username' => $data['username'],
-            'role' => UserRole::STAFF,
-            'status' => $data['status'],
-            'phonenumber' => $data['phonenumber'],
-            'gender' => $data['gender'],
-            'date_of_birth' => $data['date_of_birth'],
+            'username' => $data['username'] ?? null,
+            'status' => $data['status'] ?? null,
+            'phonenumber' => $data['phonenumber'] ?? null,
+            'gender' => $data['gender'] ?? null,
+            'date_of_birth' => $data['date_of_birth'] ?? null,
         ];
 
         if(isset($data['password'])) {
@@ -147,7 +146,10 @@ class UserService extends BaseService
             ];
         }
 
-        return true;
+        return [
+            'user' => json_decode(json_encode(new UserInformation($this->getFirst($id))))
+        ];
+        
     }
 
     public function delete($ids)

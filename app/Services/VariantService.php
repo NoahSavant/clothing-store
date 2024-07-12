@@ -3,13 +3,16 @@
 namespace App\Services;
 
 use App\Constants\FileConstants\FileCategory;
+use App\Constants\ProductConstants\ProductStatus;
 use App\Constants\UserConstants\UserStatus;
 use App\Http\Resources\AddressInformation;
 use App\Models\Address;
+use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Variant;
+use DB;
 
 class VariantService extends BaseService
 {
@@ -21,8 +24,14 @@ class VariantService extends BaseService
     public function get($productId, $input)
     {
         $getAll = $input['all'] ?? false;
+        $status = $input['status'] ?? null;
 
-        $query = $this->model->where('product_id', $productId)->with(['product_color', 'product_size']);
+        if($status != null) {
+            $query = $this->model->where('product_id', $productId)->with(['product_color', 'product_size'])->where('status', $status);
+        } else {
+            $query = $this->model->where('product_id', $productId)->with(['product_color', 'product_size']);
+        }
+
         $data = $this->getAll($input, $query, $getAll);
 
         return $data;
@@ -85,35 +94,35 @@ class VariantService extends BaseService
     {
         if (empty($ids)) {
             return [
-                'errorMessage' => 'No variant IDs provided.'
+                'errorMessage' => 'Không tìm thấy sản phẩm'
             ];
         }
-    
-        $firstVariant = $this->getFirst($ids[0]);
 
-        if (!$firstVariant || !$firstVariant->product) {
+        try {
+            DB::beginTransaction();
+
+            $deleted = parent::delete($ids);
+
+            CartItem::whereIn('variant_id', $ids)->delete();
+
+            if (!$deleted) {
+                DB::rollBack();
+                return [
+                    'errorMessage' => 'Xóa sản phẩm thất bại'
+                ];
+            }
+
+            DB::commit();
+
+            return true;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
             return [
-                'errorMessage' => 'Variant or product not found.'
+                'errorMessage' => $e->getMessage()
             ];
         }
-
-        $variantsCount = Variant::where('product_id', $firstVariant->product_id)->count();
-
-        if ($variantsCount <= count($ids)) {
-            return [
-                'errorMessage' => 'Cannot delete variant. Product must have at least one variant.'
-            ];
-        }
-
-        $deleted = parent::delete($ids);
-
-        if (!$deleted) {
-            return [
-                'errorMessage' => 'Delete variant failed'
-            ];
-        }
-
-        return true;
     }
 
 

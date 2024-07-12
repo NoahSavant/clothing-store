@@ -96,11 +96,15 @@ class Product extends Model
         return $this->variants()->first()->stock_limit ?? 0;
     }
 
-    public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [], $minPrice = null, $maxPrice = null, $excludeCollectionId = null)
+    public function scopeSearch($query, $search, $tags = [], $status = null, $collectionIds = [], $minPrice = null, $maxPrice = null, $excludeCollectionId = null, $withVariant=null)
     {
         $query->with(['tags', 'category', 'collections']);
 
-        $query->whereHas('variants');
+        if ($withVariant) {
+            $query->whereHas('variants', function ($query) {
+                $query->where('status', 0);
+            });
+        }
         
         if (!empty($tags)) {
             $query->whereHas('tags', function ($query) use ($tags) {
@@ -199,5 +203,102 @@ class Product extends Model
             ) THEN 1 ELSE 0 END', [$morphType, $userId]);
             }
         ]);
+    }
+
+    public function scopeRecommendForUser($query, $userId, $limit = 10)
+    {
+        // Step 1: Get products in the user's cart
+        $cartProductIds = CartItem::where('user_id', $userId)
+            ->with('variant.product')
+            ->get()
+            ->pluck('variant.product.id')
+            ->unique()
+            ->toArray();
+
+        // Step 2: Collaborative Filtering
+        $similarUserIds = CartItem::whereIn('variant_id', function ($query) use ($cartProductIds) {
+            $query->select('id')
+                ->from('variants')
+                ->whereIn('product_id', $cartProductIds);
+        })->where('user_id', '!=', $userId)
+            ->pluck('user_id')
+            ->unique()
+            ->toArray();
+
+        $collaborativeProductIds = CartItem::whereIn('user_id', $similarUserIds)
+            ->with('variant.product')
+            ->get()
+            ->pluck('variant.product.id')
+            ->unique()
+            ->diff($cartProductIds)
+            ->toArray();
+
+        // Step 3: Content-Based Filtering
+        $tags = Tag::whereHas('products', function ($query) use ($cartProductIds) {
+            $query->whereIn('products.id', $cartProductIds);
+        })->pluck('id')->toArray();
+
+        $categories = Category::whereHas('products', function ($query) use ($cartProductIds) {
+            $query->whereIn('products.id', $cartProductIds);
+        })->pluck('id')->toArray();
+
+        $collections = Collection::whereHas('products', function ($query) use ($cartProductIds) {
+            $query->whereIn('products.id', $cartProductIds);
+        })->pluck('id')->toArray();
+
+        $contentProductIds = Product::whereNotIn('id', $cartProductIds)
+            ->where(function ($query) use ($tags, $categories, $collections) {
+                $query->whereHas('tags', function ($query) use ($tags) {
+                    $query->whereIn('tags.id', $tags);
+                })
+                    ->orWhereIn('category_id', $categories)
+                    ->orWhereHas('collections', function ($query) use ($collections) {
+                        $query->whereIn('collections.id', $collections);
+                    });
+            })
+            ->pluck('id')
+            ->toArray();
+
+        // Step 4: Combine Results and Score Products
+        $combinedProductIds = array_unique(array_merge($collaborativeProductIds, $contentProductIds));
+
+        $products = Product::whereIn('id', $combinedProductIds)
+            ->with(['tags', 'category', 'collections'])
+            ->get();
+
+        foreach ($products as $product) {
+            $tagScore = $product->tags->pluck('id')->intersect($tags)->count();
+            $categoryScore = in_array($product->category_id, $categories) ? 1 : 0;
+            $collectionScore = $product->collections->pluck('id')->intersect($collections)->count();
+            $collaborativeScore = in_array($product->id, $collaborativeProductIds) ? 1 : 0;
+            $product->score = $tagScore + $categoryScore + $collectionScore + $collaborativeScore;
+        }
+
+        return $products->sortByDesc('score')->random($limit);
+    }
+
+    public function scopeRecommendForGuest($query, $limit = 10)
+    {
+        // Step 1: Content-Based Filtering
+        // Get the latest products
+        $products = Product::orderBy('created_at', 'desc')
+            ->with(['tags', 'category', 'collections'])
+            ->take($limit * 2) // Fetch more products to filter later
+            ->get();
+
+        // Get tags, categories, and collections from these latest products
+        $tags = $products->pluck('tags.*.id')->flatten()->unique()->toArray();
+        $categories = $products->pluck('category_id')->unique()->toArray();
+        $collections = $products->pluck('collections.*.id')->flatten()->unique()->toArray();
+
+        // Calculate scores
+        foreach ($products as $product) {
+            $tagScore = $product->tags->pluck('id')->intersect($tags)->count();
+            $categoryScore = in_array($product->category_id, $categories) ? 1 : 0;
+            $collectionScore = $product->collections->pluck('id')->intersect($collections)->count();
+            $product->score = $tagScore + $categoryScore + $collectionScore;
+        }
+
+        return $products->sortByDesc('score')->random($limit);
     }
 }

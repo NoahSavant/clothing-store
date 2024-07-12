@@ -33,7 +33,7 @@ class VariantController extends Controller
         }
 
         return response()->json([
-            'successMessage' => "Create variant successfully",
+            'successMessage' => "Tạo sản phẩm thành công",
         ], StatusResponse::SUCCESS);
     }
 
@@ -59,18 +59,19 @@ class VariantController extends Controller
         }
 
         return response()->json([
-            'successMessage' => 'Update variant successfully'
+            'successMessage' => 'Chỉnh sửa sản phẩm thành công'
         ], StatusResponse::SUCCESS);
     }
 
     public function delete(DeleteFormRequest $request) {
         $result = $this->variantService->delete($request->get('ids'));
+
         if (isset($result['errorMessage'])) {
             return response()->json($result, StatusResponse::ERROR);
         }
 
         return response()->json([
-            'successMessage' => 'Delete variant(s) successfully',
-        ], StatusResponse::ERROR);
+            'successMessage' => 'Xóa sản phẩm thành công',
+        ], StatusResponse::SUCCESS);
     }
 }

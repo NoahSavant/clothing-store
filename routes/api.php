@@ -5,6 +5,7 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthenController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DiscountController;
@@ -66,6 +67,10 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
 Route::controller(BlogController::class)->prefix('blogs')->group(function () {
     Route::get('/', 'index')->name('getAllBlogs');
     Route::get('/{id}', 'get')->name('getSingleBlog');
+});
+
+Route::controller(CartItemController::class)->prefix('cart-items')->group(function () {
+    Route::get('/', 'index')->name('getAllCartItem');
 });
 
 Route::controller(CommentController::class)->prefix('comments')->group(function () {
@@ -138,6 +143,12 @@ Route::controller(BlogController::class)->prefix('blogs')->group(function () {
     Route::delete('/', 'delete')->name('deleteBlogs');
 });
 
+Route::controller(CartItemController::class)->prefix('cart-items')->group(function () {
+    Route::post('/', 'create')->name('createCartItems');
+    Route::put('/{id}', 'update')->name('updateCartItems');
+    Route::delete('/', 'delete')->name('deleteCartItems');
+});
+
 Route::controller(CommentController::class)->prefix('comments')->group(function () {
     Route::post('/', 'create')->name('createComments');
     Route::put('/{id}', 'update')->name('updateComments');
@@ -154,7 +165,7 @@ Route::controller(UserController::class)->prefix('users')->group(function () {
 Route::controller(VariantController::class)->prefix('variants')->group(function () {
     Route::put('/{id}', 'update')->name('updateVariant');
     Route::post('/{id}', 'create')->name('createVariant');
-    Route::delete('', 'delete')->name('deleteVariants');
+    Route::delete('/', 'delete')->name('deleteVariants');
 });
 
 Route::middleware('auth:api')->group(function () {
