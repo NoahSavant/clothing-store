@@ -25,7 +25,7 @@ class CreateCommentFormRequest extends FormRequest
             'commentmorph_id' => 'required_without:commentmorph_type|integer',
             'commentmorph_type' => 'required_without:commentmorph_id|integer',
             'content' => 'required|string',
-            'rate' => $this->input('commentmorph_type') != 2 ? 'required|integer' : '',
+            'rate' => $this->input('commentmorph_type') != 2 ? 'required' : '',
         ];
     }
 

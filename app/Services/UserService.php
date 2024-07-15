@@ -88,24 +88,24 @@ class UserService extends BaseService
         $user = auth()->user();
 
         if (!$this->checkHash($data['current_password'], $user->password)) {
-            return response()->json([
+            return [
                 'errorMessage' => 'Mật khẩu hiện tại không chính xác',
-            ], 400);
+            ];
         }
 
-        if (!$this->checkHash($data['new_password'], $user->password)) {
-            return response()->json([
+        if ($this->checkHash($data['new_password'], $user->password)) {
+            return [
                 'errorMessage' => 'Mật khẩu mới không được trùng mới mật khẩu hiện tại',
-            ], 400);
+            ];
         }
 
         $user->password = $this->hash($data['new_password']);
         $user->save();
 
-        return response()->json([
+        return [
             'successMessage' => 'Change password successfully',
             'data' => $user
-        ]);
+        ];
     }
 
     public function update($id, $data)

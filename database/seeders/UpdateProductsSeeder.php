@@ -16,21 +16,21 @@ class UpdateProductsSeeder extends Seeder
      */
     public function run()
     {
-        $products = Product::get();
+        // $products = Product::get();
 
-        foreach ($products as $product) {
-            $productSize = ProductSize::where('product_id', $product->id)->first();
+        // foreach ($products as $product) {
+        //     $productSize = ProductSize::where('product_id', $product->id)->first();
 
-            if ($productSize) {
-                ProductSize::where('product_id', $product->id)
-                    ->where('id', '!=', $productSize->id)
-                    ->delete();
+        //     if ($productSize) {
+        //         ProductSize::where('product_id', $product->id)
+        //             ->where('id', '!=', $productSize->id)
+        //             ->delete();
 
-                Variant::where('product_id', $product->id)
-                    ->update([
-                        'product_size_id' => $productSize->id
-                    ]);
-            }
-        }
+        //         Variant::where('product_id', $product->id)
+        //             ->update([
+        //                 'product_size_id' => $productSize->id
+        //             ]);
+        //     }
+        // }
     }
 }

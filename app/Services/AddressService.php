@@ -17,6 +17,17 @@ class AddressService extends BaseService
     public function get($input)
     {
         $search = $input['search'] ?? '';
+        $getAll = $input['all'] ?? false;
+
+        if($getAll) {
+            $user = auth()->user();
+            $query = $this->model->where('user_id', $user->id)->search($search);
+            $data = $this->getAll($input, $query, $getAll);
+            $data = AddressInformation::collection($data);
+
+            return $data;
+        }
+
         $user = auth()->user();
         $query = $this->model->where('user_id', $user->id)->search($search);
         $data = $this->getAll($input, $query);
@@ -60,15 +71,13 @@ class AddressService extends BaseService
         }
 
         if (isset ($data['name']) and $data['name']) {
-            if ($this->isExisted($data['name'])) {
-                return [
-                    'errorMessage' => 'This name is existed'
-                ];
-            }
-
             if (count($ids) > 1) {
                 return [
                     'errorMessage' => 'Can not set the same name for multi address'
+                ];
+            } elseif ($this->isExisted($data['name'], $ids[0])) {
+                return [
+                    'errorMessage' => 'This name is existed'
                 ];
             }
         }
@@ -141,7 +150,10 @@ class AddressService extends BaseService
         });
     }
 
-    public function isExisted($name) {
+    public function isExisted($name, $id=null) {
+        if($id) {
+            return $this->model->where('id', '!=', $id)->where('user_id', auth()->user()->id)->where('name', $name)->exists();
+        }
         return $this->model->where('user_id', auth()->user()->id)->where('name', $name)->exists();
     }
 

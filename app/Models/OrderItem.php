@@ -16,14 +16,13 @@ class OrderItem extends Model
         'name',
         'description',
         'short_description',
-        'variant_name',
         'size',
         'color',
-        'material',
         'original_price',
         'price',
-        'tax',
         'amount',
+        'image_url',
+        'variant_return'
     ];
 
     public function order(): BelongsTo

@@ -32,37 +32,54 @@ class Comment extends Model
         return $this->morphTo();
     }
 
-    public function files():MorphMany
+    public function files(): MorphMany
     {
         return $this->morphMany(File::class, 'filemorph');
     }
 
-    public function scopeSearch($query, $search, $commentmorph_id, $commentmorph_type, $hide = false)
+    public function replies()
     {
-        $query->with(['user']);
+        return $this->hasMany(Comment::class, 'commentmorph_id', 'id')
+            ->where('commentmorph_type', Comment::class);
+    }
 
+    public function getRateAttribute($value)
+    {
+        return (float) $value;
+    }
+
+    public function scopeSearch($query, $search, $commentmorph_id, $commentmorph_type, $hide = false, $rate = null)
+    {
+        $query->with(['user', 'replies.user']);
+        
         $parent = CommentParent::getCommentParent($commentmorph_type);
 
         $query->where('commentmorph_id', $commentmorph_id)
             ->where('commentmorph_type', $parent);
 
-        if ($commentmorph_type != CommentParent::COMMENT) {
-            $query->addSelect([
-                'rate' => function ($query) {
-                    $query->selectRaw('COALESCE((
-                    SELECT value FROM rates
-                    WHERE rates.ratemorph_id = comments.commentmorph_id
-                    AND rates.ratemorph_type = comments.commentmorph_type
-                    AND rates.user_id = comments.user_id
-                ), NULL)');
-                }
-            ]);
-        }
+        $query->addSelect([
+            'rate' => function ($query) {
+                $query->selectRaw('COALESCE((
+            SELECT CAST(value AS FLOAT) FROM rates
+            WHERE rates.ratemorph_id = comments.commentmorph_id
+            AND rates.ratemorph_type = comments.commentmorph_type
+            AND rates.user_id = comments.user_id
+            AND rates.deleted_at IS NULL
+            LIMIT 1
+        ), 0)');
+            }
+        ]);
 
         if (!$hide) {
             $query->where('hide', $hide);
         }
 
+        if ($rate !== null) {
+            $query->whereHas('rate', function ($query) use ($rate) {
+                $query->where('value', $rate);
+            });
+        }
+
         if ($search === '') {
             return $query;
         }
@@ -81,26 +98,33 @@ class Comment extends Model
         return $query;
     }
 
-    public function scopeSearchWithUser($query, $search, $commentmorph_id, $commentmorph_type, $user_id)
+
+    public function scopeSearchWithUser($query, $search, $commentmorph_id, $commentmorph_type, $user_id, $rate = null)
     {
-        $query->with(['user']);
+        $query->with(['user', 'replies.user']);
 
         $query->where('user_id', $user_id)
             ->where('commentmorph_id', $commentmorph_id)
             ->where('commentmorph_type', CommentParent::getCommentParent($commentmorph_type));
 
-        if ($commentmorph_type != CommentParent::COMMENT) {
-            $query->addSelect([
-                'rate' => function ($query) {
-                    $query->selectRaw('COALESCE((
-                    SELECT value FROM rates
-                    WHERE rates.ratemorph_id = comments.commentmorph_id
-                    AND rates.ratemorph_type = comments.commentmorph_type
-                    AND rates.user_id = comments.user_id
-                ), NULL)');
-                }
-            ]);
+        if ($rate !== null) {
+            $query->whereHas('rate', function ($query) use ($rate) {
+                $query->where('value', $rate);
+            });
         }
+
+        $query->addSelect([
+            'rate' => function ($query) {
+                $query->selectRaw('COALESCE((
+            SELECT CAST(value AS FLOAT) FROM rates
+            WHERE rates.ratemorph_id = comments.commentmorph_id
+            AND rates.ratemorph_type = comments.commentmorph_type
+            AND rates.user_id = comments.user_id
+            AND rates.deleted_at IS NULL
+            LIMIT 1
+        ), 0)');
+            }
+        ]);
 
         if ($search === '') {
             return $query;
@@ -120,25 +144,32 @@ class Comment extends Model
         return $query;
     }
 
-    public function scopeSearchWithOutUser($query, $search, $commentmorph_id, $commentmorph_type, $user_id)
-    {
-        $query->with(['user']);
 
-        $query->where('user_id', '!=', $user_id)
+    public function scopeSearchWithOutUser($query, $search, $commentmorph_id, $commentmorph_type, $user_id, $rate = null)
+    {
+        $query->with(['user', 'replies.user']);
+
+        $query
             ->where('commentmorph_id', $commentmorph_id)
             ->where('commentmorph_type', CommentParent::getCommentParent($commentmorph_type));
 
-        if ($commentmorph_type != CommentParent::COMMENT) {
-            $query->addSelect([
-                'rate' => function ($query) {
-                    $query->selectRaw('COALESCE((
-                    SELECT value FROM rates
-                    WHERE rates.ratemorph_id = comments.commentmorph_id
-                    AND rates.ratemorph_type = comments.commentmorph_type
-                    AND rates.user_id = comments.user_id
-                ), NULL)');
-                }
-            ]);
+        $query->addSelect([
+            'rate' => function ($query) {
+                $query->selectRaw('COALESCE((
+            SELECT CAST(value AS FLOAT) FROM rates
+            WHERE rates.ratemorph_id = comments.commentmorph_id
+            AND rates.ratemorph_type = comments.commentmorph_type
+            AND rates.user_id = comments.user_id
+            AND rates.deleted_at IS NULL
+            LIMIT 1
+        ), 0)');
+            }
+        ]);
+
+        if ($rate !== null) {
+            $query->whereHas('rate', function ($query) use ($rate) {
+                $query->where('value', $rate);
+            });
         }
 
         if ($search === '') {
@@ -158,5 +189,4 @@ class Comment extends Model
 
         return $query;
     }
-
 }

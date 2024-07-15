@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Constants\DiscountConstants\DiscountStatus;
+use App\Constants\DiscountConstants\DiscountType;
 use App\Constants\FileConstants\FileCategory;
+use App\Constants\UserConstants\UserRole;
 use App\Constants\UserConstants\UserStatus;
 use App\Http\Resources\AddressInformation;
 use App\Models\Address;
@@ -24,8 +27,13 @@ class DiscountService extends BaseService
     {
         $search = $input['search'] ?? '';
         $getAll = $input['all'] ?? false;
+        $subject = $input['subject'] ?? null;
 
-        $query = $this->model->search($search);
+        $user = auth()->user();
+        $query = $this->model->search($search, $subject);
+        if($user && $user->role == UserRole::CUSTOMER) {
+            $query->where('status', DiscountStatus::OPEN)->where('type', DiscountType::PUBLIC);
+        }
         $data = $this->getAll($input, $query, $getAll);
 
         return $data;
@@ -93,6 +101,7 @@ class DiscountService extends BaseService
             'condition' => $data['condition'],
             'value' => $data['value'],
             'max_price' => $data['max_price'],
+            'min_price' => $data['min_price'],
             'status' => $data['status'],
             'started_at' => $data['started_at'],
             'ended_at' => $data['ended_at'],

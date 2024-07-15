@@ -31,6 +31,6 @@ class CartItem extends Model
     public function scopeWithProductInfo(Builder $query, $userId)
     {
         return $query->where('user_id', $userId)
-                     ->with(['variant.product']);
+                     ->with(['variant.product', 'variant.product_color', 'variant.product_size']);
     }
 }

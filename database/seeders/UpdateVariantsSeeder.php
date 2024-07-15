@@ -15,25 +15,25 @@ class UpdateVariantsSeeder extends Seeder
      */
     public function run()
     {
-        $variants = Variant::get();
+        // $variants = Variant::get();
 
-        foreach ($variants as $variant) {
-            $color = ProductColor::create([
-                'product_id' => $variant->product_id,
-                'color' => $variant->color,
-                'image_url' => $variant->image_url
-            ]);
+        // foreach ($variants as $variant) {
+        //     $color = ProductColor::create([
+        //         'product_id' => $variant->product_id,
+        //         'color' => $variant->color,
+        //         'image_url' => $variant->image_url
+        //     ]);
 
-            $size = ProductSize::create([
-                'product_id' => $variant->product_id,
-                'size' => $variant->size
-            ]);
+        //     $size = ProductSize::create([
+        //         'product_id' => $variant->product_id,
+        //         'size' => $variant->size
+        //     ]);
 
-            Variant::where('id', $variant->id)
-                ->update([
-                    'product_color_id' => $color->id,
-                    'product_size_id' => $size->id,
-                ]);
-        }
+        //     Variant::where('id', $variant->id)
+        //         ->update([
+        //             'product_color_id' => $color->id,
+        //             'product_size_id' => $size->id,
+        //         ]);
+        // }
     }
 }

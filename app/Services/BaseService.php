@@ -9,6 +9,7 @@ use App\Jobs\SendMailQueue;
 use App\Mail\SendMail;
 use App\Constants\FileConstants\FileType;
 use App\Models\File;
+use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Defuse\Crypto\Crypto;
@@ -60,7 +61,26 @@ class BaseService
             return $query->orderBy($column, $order)->get();
         }
 
-        $data = $query->orderBy($column, $order)->paginate($limit);
+        if ($column === 'price') {
+            $query->leftJoin('variants', 'products.id', '=', 'variants.product_id')
+                ->select('products.*')
+                ->selectRaw('MIN(variants.price) as min_price')
+                ->groupBy('products.id')
+                ->orderBy('min_price', $order);
+        } elseif ($column === 'average_rate') {
+            $query->leftJoin('rates', function ($join) {
+                $join->on('products.id', '=', 'rates.ratemorph_id')
+                    ->where('rates.ratemorph_type', '=', Product::class);
+            })
+                ->select('products.*')
+                ->selectRaw('COALESCE(AVG(CAST(rates.value AS FLOAT)), 0) as average_rate')
+                ->groupBy('products.id')
+                ->orderBy('average_rate', $order);
+        } else {
+            $query->orderBy($column, $order);
+        }
+
+        $data = $query->paginate($limit);
 
         return [
             'items' => $data->items(),
@@ -208,5 +228,26 @@ class BaseService
         return [
             'data' => $result
         ];
+    }
+
+    public function generateUniqueCode()
+    {
+        $currentTime = microtime(true);
+
+        $timeString = str_replace('.', '', $currentTime);
+
+        $timeString = substr($timeString, -6);
+
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+        $randomString = '';
+        for ($i = 0; $i < 4; $i++) {
+            $index = rand(0, strlen($characters) - 1);
+            $randomString .= $characters[$index];
+        }
+
+        $uniqueCode = $timeString . $randomString;
+
+        return strtoupper($uniqueCode);
     }
 }

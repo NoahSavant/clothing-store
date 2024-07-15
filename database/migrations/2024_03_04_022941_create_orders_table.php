@@ -13,15 +13,22 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('code')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('staff_id')->nullable();
             $table->timestamp('ended_at')->nullable();
             $table->unsignedBigInteger('total_price')->nullable();
             $table->integer('transportation_method')->nullable();
+            $table->unsignedBigInteger('product_price')->nullable();
+            $table->unsignedBigInteger('transport_price')->nullable();
+            $table->unsignedBigInteger('paid')->nullable();
+            $table->unsignedBigInteger('product_discount')->nullable();
+            $table->unsignedBigInteger('transport_discount')->nullable();
             $table->integer('payment_method')->nullable();
             $table->integer('status')->nullable();
             $table->string('phonenumber')->nullable();
             $table->string('address')->nullable();
+            $table->string('note')->nullable();
             $table->string('address_link')->nullable();
             $table->timestamps();
             $table->softDeletes();

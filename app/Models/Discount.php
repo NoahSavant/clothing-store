@@ -24,6 +24,7 @@ class Discount extends Model
         'started_at',
         'ended_at',
         'image_url',
+        'min_price'
     ];
 
     public function userDiscounts(): HasMany
@@ -35,8 +36,12 @@ class Discount extends Model
         return $this->hasMany(AttachDiscount::class);
     }
 
-    public function scopeSearch($query, $search)
+    public function scopeSearch($query, $search, $subject)
     {
+        if($subject !== null) {
+            $query->where('subject', $subject);
+        }
+
         if ($search === '') {
             return $query;
         }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Constants\CommentConstants\CommentParent;
+use DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,5 +28,12 @@ class Rate extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeAverageRate($query, $ratemorph_id, $ratemorph_type)
+    {
+        return $query->where('ratemorph_id', $ratemorph_id)
+            ->where('ratemorph_type', CommentParent::getCommentParent($ratemorph_type))
+            ->selectRaw('AVG(CAST(value AS FLOAT)) AS average');
     }
 }

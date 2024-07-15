@@ -18,10 +18,12 @@ return new class extends Migration
             $table->text('short_description')->nullable();
             $table->string('size')->nullable();
             $table->string('color')->nullable();
+            $table->string('image_url')->nullable();
             $table->unsignedBigInteger('order_id')->nullable();
             $table->unsignedBigInteger('original_price')->nullable();
             $table->unsignedBigInteger('price')->nullable();
             $table->unsignedBigInteger('amount')->nullable();
+            $table->unsignedBigInteger('variant_return')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

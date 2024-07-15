@@ -2,7 +2,7 @@
 
 namespace App\Constants\DiscountConstants;
 
-class DiscountType
+class DiscountStatus
 {
     const OPEN = 0;
 

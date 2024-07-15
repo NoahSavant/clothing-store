@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('condition')->nullable();
             $table->string('value')->nullable();
             $table->unsignedBigInteger('max_price')->nullable();
-            $table->string('code')->nullable();
+            $table->unsignedBigInteger('min_price')->nullable();
             $table->integer('status')->nullable();
             $table->timestamp('started_at')->nullable();
             $table->timestamp('ended_at')->nullable();

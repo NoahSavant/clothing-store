@@ -33,22 +33,25 @@ class ProductService extends BaseService
         $status = $input['status'] ?? null;
         $collections = $input['collections'] ?? [];
         $collections = array_map('intval', $collections);
+        $category = $input['category'] ?? 0;
         $minPrice = $input['min_price'] ?? null;
         $maxPrice = $input['max_price'] ?? null;
         $excludeCollectionId = $input['excludeCollectionId'] ?? null;
         $withVariant = $input['withVariant'] ?? true;
         $recommend = $input['recommend'] ?? false;
+        $productId = $input['productId'] ?? null;
 
         if($recommend) {
             $user = auth()->user();
             if($user) {
-                return $this->model->recommendForUser($user->id);
+                return $this->model->recommendForUser($user->id, $productId, $productId);
             } else {
-                return $this->model->recommendForGuest();
+                return $this->model->recommendForUser(null, $productId);
             }
         }
 
-        $query = $this->model->search($search, $tags, $status, $collections, $minPrice, $maxPrice, $excludeCollectionId, $withVariant);
+        $query = $this->model->search($search, $tags, $status, $collections, $category, $minPrice, $maxPrice, $excludeCollectionId, $withVariant);
+
         $data = $this->getAll($input, $query);
         return $data;
     }

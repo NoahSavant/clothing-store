@@ -10,6 +10,7 @@ use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TagController;
@@ -67,6 +68,11 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
 Route::controller(BlogController::class)->prefix('blogs')->group(function () {
     Route::get('/', 'index')->name('getAllBlogs');
     Route::get('/{id}', 'get')->name('getSingleBlog');
+});
+
+Route::controller(OrderController::class)->prefix('orders')->group(function () {
+    Route::get('/', 'index')->name('getAllOrders');
+    Route::get('/{id}', 'get')->name('getSingleOrder');
 });
 
 Route::controller(CartItemController::class)->prefix('cart-items')->group(function () {
@@ -141,6 +147,12 @@ Route::controller(BlogController::class)->prefix('blogs')->group(function () {
     Route::post('/', 'create')->name('createBlogs');
     Route::put('/{id}', 'update')->name('updateBlogs');
     Route::delete('/', 'delete')->name('deleteBlogs');
+});
+
+Route::controller(OrderController::class)->prefix('orders')->group(function () {
+    Route::post('/', 'create')->name('createOrders');
+    Route::put('/{id}', 'update')->name('updateOrders');
+    Route::delete('/', 'delete')->name('deleteOrders');
 });
 
 Route::controller(CartItemController::class)->prefix('cart-items')->group(function () {

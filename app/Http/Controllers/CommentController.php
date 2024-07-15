@@ -63,14 +63,10 @@ class CommentController extends Controller
     public function delete(DeleteFormRequest $request) {
         $result = $this->commentService->delete($request->get('ids'));
 
-        if (!$result) {
-            return response()->json([
-                'errorMessage' => 'Delete comment fail',
-            ], StatusResponse::ERROR);
+        if (isset($result['errorMessage'])) {
+            return response()->json($result, StatusResponse::ERROR);
         }
 
-        return response()->json([
-            'successMessage' => 'Delete comment successfully',
-        ], StatusResponse::SUCCESS);
+        return response()->json($result, StatusResponse::SUCCESS);
     }
 }
