@@ -24,6 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger('price')->nullable();
             $table->unsignedBigInteger('amount')->nullable();
             $table->unsignedBigInteger('variant_return')->nullable();
+            $table->unsignedBigInteger('product_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

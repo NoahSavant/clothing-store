@@ -152,6 +152,151 @@
                 width: 100% !important
             }
         }
+
+        label {
+        font-weight: bold;
+        }
+
+        .container {
+        font-family: Arial, sans-serif;
+        background-color: #DBEAFE;
+        padding: 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        border-radius: 8px;
+        }
+        .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+        }
+        .header h1 {
+        color: #333333;
+        font-size: 24px;
+        margin: 0;
+        }
+        .order-details {
+        margin-top: 20px;
+        /* background: #ffffff;
+        padding: 20px; */
+        /* border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1); */
+        }
+        .order-info {
+        margin-bottom: 15px;
+        }
+        .order-info label {
+        font-weight: bold;
+        color: #666666;
+        }
+        .order-info p {
+        margin: 5px 0;
+        }
+        .customer-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        }
+        .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+        }
+        .customer-details {
+        flex: 1;
+        }
+        .customer-name {
+        font-weight: bold;
+        color: #333333;
+        margin-bottom: 5px;
+        }
+        .customer-email {
+        color: #666666;
+        font-size: 14px;
+        }
+        .order-item {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 15px 0;
+        }
+        .item-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-right: 15px;
+        }
+        .item-details {
+        flex: 1;
+        }
+        .item-name {
+        font-weight: bold;
+        color: #333333;
+        margin-bottom: 5px;
+        }
+        .item-price {
+        color: #666666;
+        font-size: 14px;
+        }
+        .item-options {
+        font-size: 14px;
+        margin-top: 5px;
+        }
+        .item-options span {
+        margin-right: 10px;
+        }
+        .total-section {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        }
+        .total-label {
+        font-size: 1.125rem;
+        font-weight: medium;
+        }
+        .total-value {
+        font-size: 1.125rem;
+        font-weight: bold;
+        }
+        .total {
+        color: #2c4fa3;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        }
+        hr {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        }
+        .item-details {
+        flex: 1;
+        margin-left: 1rem;
+        }
+        .item-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-top: 1px solid #cbd5e0;
+        gap: 0.75rem;
+        }
+        .item-info {
+        display: flex;
+        gap: 0.75rem;
+        }
+        .item-image {
+        width: 9rem;
+        height: 9rem;
+        object-fit: cover;
+        }
+        .item-details {
+        flex: 1;
+        margin-left: 1rem;
+        }
+        
     </style>
 </head>
 
@@ -260,7 +405,7 @@
                                                                             </h1>
                                                                             <h2 class="text-center"
                                                                                 style="Margin:0;Margin-bottom:10px;color:#000;font-family:Arial,sans-serif;font-size:30px;font-weight:400;line-height:1.2;margin:0;margin-bottom:10px;padding:0;text-align:center;word-wrap:normal">
-                                                                                Thông tin kích hoạt tài khoản
+                                                                                Cảm ơn bạn đã mua hàng
                                                                             </h2>
                                                                         </th>
                                                                         <th class="expander"
@@ -291,16 +436,116 @@
                                                                                 Xin chào {{$name}},</p>
                                                                             <p
                                                                                 style="Margin:0;Margin-bottom:19px;color:#333;font-family:Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:19px;padding:0;text-align:left">
-                                                                            <p>Cảm ơn bạn đã trở thành khách hàng của
-                                                                                <b>Fashion line</b>! Để kích hoạt tài
-                                                                                khoản của bạn và bắt đầu khám phá, hãy
-                                                                                sử dụng mã kích hoạt dưới đây:</p>
+                                                                            <p>Cảm ơn bạn đã tin dùng sản phẩm của chúng
+                                                                                tôi, hãy trải nghiệm và để lại ý kiến ở
+                                                                                phần bình luận sản phẩm nhé, dưới đây là
+                                                                                đơn hàng của bạn:</p>
 
-                                                                            <p>Mã kích hoạt: <b>{{ $verifyCode }}</b>
-                                                                            </p>
-
-                                                                            <p>Hãy kích hoạt tài khoản của bạn trong 24
-                                                                                giờ.</p>
+                                                                            <div class="container">
+                                                                                <div class="header">
+                                                                                    <h1>Chi tiết đơn hàng</h1>
+                                                                                </div>
+                                                                                <div class="order-details">
+                                                                                    <div class="order-info">
+                                                                                        <label>Khách hàng:</label>
+                                                                                        <div class="customer-info">
+                                                                                            <img src="{{ $order->user->image_url }}" alt="Avatar" class="avatar">
+                                                                                            <div class="customer-details">
+                                                                                                <div class="customer-name">{{ $order->user->username }}</div>
+                                                                                                <div class="customer-email">{{ $order->user->email }}</div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="order-info">
+                                                                                        <label>Mã đơn hàng:</label>
+                                                                                        <p>{{ $order->code }}</p>
+                                                                                    </div>
+                                                                                    <div class="order-info">
+                                                                                        <label>Địa chỉ:</label>
+                                                                                        <p>{{ $order->address }}</p>
+                                                                                    </div>
+                                                                                    <div class="order-info">
+                                                                                        <label>Ghi chú:</label>
+                                                                                        <p>{{ $order->note }}</p>
+                                                                                    </div>
+                                                                                    <div class="order-info">
+                                                                                        <label>Trạng thái đơn hàng:</label>
+                                                                                        <p>{{ $order->status }}</p>
+                                                                                    </div>
+                                                                                    <div class="order-info">
+                                                                                        <label>Phương thức vận chuyển:</label>
+                                                                                        <p>{{ $order->transport_method ? 'Vận chuyển nhanh 3 ngày' : 'Vận chuyển 3 ngày' }}</p>
+                                                                                    </div>
+                                                                                    <div class="order-info">
+                                                                                        <label>Phương thức thanh toán:</label>
+                                                                                        @if($order->payment_method)
+                                                                                        <div class="payment-info">
+                                                                                            <p>Thanh toán qua chuyển khoản ngân hàng</p>
+                                                                                            <div class="bank-info" style="padding-left: 0.3125rem;">
+                                                                                                <p>Ngân hàng: <strong>Vietcombank</strong></p>
+                                                                                                <p>Tên tài khoản: <strong>FashionLine</strong></p>
+                                                                                                <p>Số tài khoản: <strong>0123456789123</strong></p>
+                                                                                                <p>Nội dung chuyển khoản: <strong>{{ $order->user->username }} - {{ $order->code }}</strong></p>
+                                                                                                <p>Lưu ý: <strong>Đơn hàng sẽ bị hủy sau hai ngày</strong></p>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        @else
+                                                                                        <p>Thanh toán khi giao hàng</p>
+                                                                                        @endif
+                                                                                    </div>
+                                                                                    <div class="order-section">
+                                                                                        @foreach($order->orderItems as $item)
+                                                                                        <div class="item-container">
+                                                                                            <div class="item-info">
+                                                                                                <img src="{{ $item->image_url }}" alt="{{ $item->name }}" class="item-image">
+                                                                                                <div class="item-details">
+                                                                                                    <div class="item-name">{{ $item->name }}</div>
+                                                                                                    <div class="item-price">
+                                                                                                        <span
+                                                                                                            style="text-decoration: line-through; color: #cbd5e0; font-weight: normal; font-size: 0.75rem;">
+                                                                                                            {{ $item->original_price > 0 ? number_format($item->original_price, 0, ',', '.') . 'đ̲ ' : '' }}
+                                                                                                        </span>
+                                                                                                        {{ number_format($item->price, 0, ',', '.') }}đ̲
+                                                                                                    </div>
+                                                                                                    <div class="item-options">
+                                                                                                        <div class="item-size">Kích cỡ: {{ $item->size }}</div>
+                                                                                                        <div class="item-color">Màu sắc: {{ $item->color }}</div>
+                                                                                                    </div>
+                                                                                                    <div class="item-quantity">Số lượng: {{ $item->amount }}</div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="item-total">
+                                                                                                <div class="total-label">Tổng:</div>
+                                                                                                <div class="total-value">{{ number_format($item->price * $item->amount, 0, ',', '.') }}đ̲</div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        @endforeach
+                                                                                    </div>
+                                                                                    <hr>
+                                                                                    <div class="total-section">
+                                                                                        <div class="total-label">Tổng đơn hàng:</div>
+                                                                                        <div class="total-value">{{ number_format($order->product_price + $order->product_discount, 0, ',', '.') }}đ̲</div>
+                                                                                    </div>
+                                                                                    <div class="total-section">
+                                                                                        <div class="total-label">Giảm giá đơn hàng:</div>
+                                                                                        <div class="total-value">-{{ number_format($order->product_discount, 0, ',', '.') }}đ̲</div>
+                                                                                    </div>
+                                                                                    <div class="total-section">
+                                                                                        <div class="total-label">Phí vận chuyển:</div>
+                                                                                        <div class="total-value">{{ number_format($order->transport_price + $order->transport_discount, 0, ',', '.') }}đ̲
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="total-section">
+                                                                                        <div class="total-label">Giảm giá vận chuyển:</div>
+                                                                                        <div class="total-value">-{{ number_format($order->transport_discount, 0, ',', '.') }}đ̲</div>
+                                                                                    </div>
+                                                                                    <hr>
+                                                                                    <div class="total-section">
+                                                                                        <div class="total-label total">Tổng:</div>
+                                                                                        <div class="total-value total">{{ number_format($order->total_price, 0, ',', '.') }}đ̲</div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
 
                                                                             <p>Thân gửi,<br>
                                                                                 Fashion line</p>

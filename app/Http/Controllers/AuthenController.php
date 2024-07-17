@@ -24,6 +24,11 @@ class AuthenController extends Controller
         $this->authenService = $authenService;
     }
 
+    public function test(Request $request)
+    {
+        return $this->authenService->test();
+    }
+
     public function login(LoginFormRequest $request)
     {
         return $this->authenService->login($request->all());

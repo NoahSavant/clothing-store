@@ -49,6 +49,8 @@ Route::controller(FileController::class)->prefix('files')->group(function () {
     Route::delete('/', 'delete')->name('deleteBlocks');
 });
 
+Route::get('/test', [AuthenController::class, 'test'])->name('refresh');
+
 Route::controller(CategoryController::class)->prefix('categories')->group(function () {
     Route::get('/', 'index')->name('getAllCategories');
 });

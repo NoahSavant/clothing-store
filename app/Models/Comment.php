@@ -144,6 +144,10 @@ class Comment extends Model
         return $query;
     }
 
+    public function scopeCommentRight($query, $id, $user_id) {
+        
+    }
+
 
     public function scopeSearchWithOutUser($query, $search, $commentmorph_id, $commentmorph_type, $user_id, $rate = null)
     {

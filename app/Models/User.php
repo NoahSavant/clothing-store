@@ -93,6 +93,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Order::class);
     }
 
+    public function hasPurchasedProduct($productId)
+    {
+        return $this->orders()->whereHas('orderItems', function ($query) use ($productId) {
+            $query->where('product_id', $productId);
+        })->exists();
+    }
+
     public function handledOrders(): HasMany
     {
         return $this->hasMany(Order::class, 'staff_id');

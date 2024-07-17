@@ -128,11 +128,20 @@ class OrderService extends BaseService
                 'price' => $variant->price,
                 'amount' => $cartItem->amount,
                 'image_url' => $variant->product_color->image_url,
-                'variant_return' => $variant_return
+                'variant_return' => $variant_return,
+                'product_id' => $product->id
             ]);
             
             $cartItem->delete();
         }
+
+        $current_order = $this->model->where('id', $order->id)->with(['orderItems', 'user'])->first();
+        $current_order->status = OrderStatus::getContent($current_order->status);
+        
+        $this->sendMail("Đặt hàng thành công", 'emails.order-detail', [
+            'name' => $user->username,
+            'order' => $current_order,
+        ], $user->email);
 
         return [
             'successMessage' => 'Tạo đơn hàng thành công',

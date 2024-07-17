@@ -22,7 +22,8 @@ class OrderItem extends Model
         'price',
         'amount',
         'image_url',
-        'variant_return'
+        'variant_return',
+        'product_id'
     ];
 
     public function order(): BelongsTo

@@ -44,8 +44,8 @@ class CommentService extends BaseService
         }
         $avgRate = Rate::averageRate($id, $type)->first();
         $data['avg_rate'] = floatval($avgRate->average);
+        $data['comment_right'] = $type == CommentParent::BLOG ? 1 : ($user->hasPurchasedProduct($id) ? 1 : 0);
         return $data;
-        
     }
 
     public function getSingle($id, $request)
@@ -65,7 +65,6 @@ class CommentService extends BaseService
                 'errorMessage' => 'Không thể bình luận thêm'
             ];
         }
-
 
         $comment = parent::create([
             'user_id' => auth()->user()->id,

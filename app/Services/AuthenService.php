@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Constants\AuthenConstants\StatusResponse;
+use App\Constants\OrderConstants\OrderStatus;
 use App\Constants\UserConstants\UserRole;
 use App\Constants\UserConstants\UserStatus;
 use App\Constants\UserConstants\UserVerifyTime;
 use App\Http\Resources\UserInformation;
+use App\Models\Order;
 use App\Models\User;
 use DateInterval;
 use DateTime;
@@ -18,6 +20,20 @@ class AuthenService extends BaseService
     public function __construct(UserService $userService) {
         $this->userService = $userService;
         $this->model = null;
+    }
+
+    public function test() {
+        $current_order = Order::where('id', 4)->with(['orderItems', 'user'])->first();
+        $current_order->status = OrderStatus::getContent($current_order->status);
+
+        return view('emails.order-detail', [
+            'name' => "Khang",
+            'order' => $current_order,
+        ]);
+        $this->sendMail("Đặt hàng thành công", 'emails.order-detail', [
+            'name' => "Khang",
+            'order' => $current_order,
+        ], 'xayvier01@gmail.com');
     }
 
     public function authenCreadentials($credentials)
