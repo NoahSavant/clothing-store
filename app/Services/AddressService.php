@@ -131,7 +131,7 @@ class AddressService extends BaseService
                 ->where('default', true)
                 ->update(['default' => false]);
 
-            if($result == 0 and $id == null) {
+            if($id == null) {
                 $this->model
                     ->where('user_id', $userId)
                     ->orderBy('id')

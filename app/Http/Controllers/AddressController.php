@@ -61,6 +61,6 @@ class AddressController extends Controller
 
         return response()->json([
             'successMessage' => 'Delete address successfully',
-        ], StatusResponse::ERROR);
+        ], StatusResponse::SUCCESS);
     }
 }

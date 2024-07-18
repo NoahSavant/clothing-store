@@ -24,7 +24,6 @@ class CreateAddressFormRequest extends FormRequest
         return [
             'name' => 'required|string',
             'content' => 'required|string',
-            'url' => 'required|string',
         ];
     }
 }

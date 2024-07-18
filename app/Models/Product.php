@@ -173,6 +173,7 @@ class Product extends Model
                 $query->orWhere(function ($query) use ($keywordWithoutAccent) {
                     $query->whereRaw('LOWER(UNACCENT(name)) LIKE ?', ["%$keywordWithoutAccent%"])
                         ->orWhereRaw('unaccent(LOWER(note)) LIKE ?', ["%$keywordWithoutAccent%"])
+                        ->orWhereRaw('unaccent(LOWER(description)) LIKE ?', ["%$keywordWithoutAccent%"])
                         ->orWhereRaw('unaccent(LOWER(short_description)) LIKE ?', ["%$keywordWithoutAccent%"]);
                 });
             }
